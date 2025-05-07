@@ -1,0 +1,70 @@
+import { FC } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Briefcase, MapPin } from "lucide-react";
+
+export interface JobListing {
+    id: string;
+    title?: string;
+    organization?: string;
+    locations_derived?: string[];
+    location_type?: string;
+    url?: string;
+    date_posted?: string;
+    date_created?: string;
+}
+
+interface Props {
+    job: JobListing;
+}
+
+const JobCard: FC<Props> = ({ job }) => {
+    const {
+        title,
+        organization,
+        locations_derived,
+        location_type,
+        url,
+    } = job;
+
+    const location =
+        locations_derived?.[0] ?? (location_type === "TELECOMMUTE" ? "Remote" : "—");
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2 }}
+        >
+            <Card className="w-full h-full rounded-2xl shadow-lg hover:shadow-xl transition">
+                <CardContent className="p-6 flex flex-col gap-3">
+                    <h3 className="text-lg font-semibold leading-tight">
+                        {title ?? "Untitled role"}
+                    </h3>
+
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Briefcase size={16} /> {organization ?? "Unknown company"}
+                    </p>
+
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin size={16} /> {location}
+                    </p>
+
+                    {url && (
+                        <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-block text-sm font-medium underline hover:no-underline"
+                        >
+                            View posting →
+                        </a>
+                    )}
+                </CardContent>
+            </Card>
+        </motion.div>
+    );
+};
+
+export default JobCard;

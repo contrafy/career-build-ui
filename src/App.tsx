@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import JobGrid from "./components/ui/JobGrid";
+
+import jobsData from "../example_responses/fetch_jobs.json";
+import ycData from "../example_responses/fetch_yc_jobs.json";
+import internData from "../example_responses/fetch_internships.json";
+
+import type { JobListing } from "./components/ui/JobCard";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [allJobs, setAllJobs] = useState<JobListing[]>([]);
+
+  useEffect(() => {
+    // mock “backend” merge
+    setAllJobs([
+      ...(jobsData as JobListing[]),
+      ...(ycData as JobListing[]),
+      ...(internData as JobListing[]),
+    ]);
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+    <main className="min-h-screen bg-muted/40">
+      <header className="py-8 text-center space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Intelligent Job‑Match MVP
+        </h1>
+        <p className="text-muted-foreground">
+          {allJobs.length} opportunities loaded from sample data
         </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      </header>
+
+      <JobGrid items={allJobs} />
+    </main>
+  );
 }
 
-export default App
+export default App;
