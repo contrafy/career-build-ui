@@ -3,6 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Briefcase, MapPin } from "lucide-react";
 
+// ── Types & props ────────────────────────────────────────────────────────────────
+// Define the shape of a job object the component expects, declare the props
+// interface, and immediately pull key fields out of the incoming `job` prop for
+// easy use throughout the component.
 export interface JobListing {
     id: string;
     title?: string;
@@ -18,7 +22,15 @@ interface Props {
     job: JobListing;
 }
 
+// ── Component render ─────────────────────────────────────────────────────────────
+// Derive a human‑readable location, then render the job card:
+// • `motion.div` → fade/slide animation on mount/unmount.
+// • shadcn `Card` layout with title, company, location (with icons).
+// • Optional “View posting →” link shown only when a URL exists.
 const JobCard: FC<Props> = ({ job }) => {
+    // Extract key fields from the job object and compute a fallback-friendly
+    // `location` string: prefer the first parsed location; otherwise show "Remote"
+    // for telecommute roles or a dash if nothing is available.
     const {
         title,
         organization,
@@ -28,9 +40,13 @@ const JobCard: FC<Props> = ({ job }) => {
     } = job;
 
     const location =
-        locations_derived?.[0] ?? (location_type === "TELECOMMUTE" ? "Remote" : "—");
+        location_type === "TELECOMMUTE" ? "Remote" : locations_derived?.length ? locations_derived[0] : "-";
 
     return (
+        // Animated card markup: applies a quick fade‑in / slide‑up via Framer Motion,
+        // wraps content in a shadcn Card, and prints title, company, location, plus a
+        // conditional “View posting” link—styled and spaced with Tailwind utility
+        // classes for a clean, responsive look.
         <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
