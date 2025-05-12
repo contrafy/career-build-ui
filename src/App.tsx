@@ -3,10 +3,11 @@ import JobGrid from "./components/ui/JobGrid";
 import FiltersForm from "./components/ui/FiltersForm";
 import ResumeUpload from "./components/ui/ResumeUpload"
 
-import jobsData from "../example_responses/fetch_jobs.json";
-import ycData from "../example_responses/fetch_yc_jobs.json";
-import internData from "../example_responses/fetch_internships.json";
+// import jobsData from "../example_responses/fetch_jobs.json";
+// import ycData from "../example_responses/fetch_yc_jobs.json";
+// import internData from "../example_responses/fetch_internships.json";
 
+import { fetchAllJobs, fetchInternships }  from "@/lib/api";
 import type { JobListing } from "./components/ui/JobCard";
 import type { JobFilters } from "./components/ui/FiltersForm";
 
@@ -20,31 +21,49 @@ const DEFAULT_FILTERS: JobFilters = {
 };
 
 function App() {
-  // State that *will* drive real API calls later
-  const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
-
-  // Your existing “all jobs” state + mock merge
+  const [filters, setFilters] = useState<JobFilters | null>(null);
   const [allJobs, setAllJobs] = useState<JobListing[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Pull real listings whenever user presses <Apply>
   useEffect(() => {
-    // pretend these came from a backend
-    setAllJobs([
-      ...(jobsData as JobListing[]),
-      ...(ycData as JobListing[]),
-      ...(internData as JobListing[]),
-    ]);
-  }, []);
-
-  // ------------ 2️⃣ New: placeholder effect that will host the fetch -------- //
-  //
-  // At the moment it just logs the filters so you can see the plumbing work.
-  //
-  useEffect(() => {
-    console.info("[Filters changed] → Ready to fetch with:", filters);
-    // TODO: swap this console.log for a real fetch:
-    // fetch(`/api/jobs?keyword=${filters.keyword}&location=${filters.location}&roleType=${filters.roleType}`)
-    //   .then(r => r.json())
-    //   .then(setAllJobs);
+    if (!filters) return;             // ← guard the first mount
+    if (filters.roleType !== "INTERN") {
+      setAllJobs([]);
+      return;
+    }
+    const ctrl = new AbortController();
+    (async () => {
+      try {
+        setLoading(true); setError(null);
+        setAllJobs(await fetchInternships(filters));
+      } catch (e: any) {
+        setError(e.message ?? "Network error");
+      } finally { setLoading(false); }
+    })();
+    return () => ctrl.abort();
   }, [filters]);
+
+  // Handle GPT-generated hints from ResumeUpload (optional, keep simple)
+  const handleResumeDone = (payload: any) => {
+    if (!payload?.jobs) return;
+    const h = payload.jobs;
+    setFilters(prev => {
+      const base = prev ?? DEFAULT_FILTERS;   // ← fallback when prev === null
+      return {
+        ...base,
+        title: base.title || h.title_filter || "",
+        location: base.location || h.location_filter || "",
+        remote:
+          base.remote !== null
+            ? base.remote
+            : typeof h.remote === "boolean"
+              ? h.remote
+              : null,
+      };
+    });
+  };
 
   return (
     <main className="mx-auto max-w-6xl p-6 space-y-10">
@@ -52,12 +71,15 @@ function App() {
 
       {/* ➊ New toolbar */}
       <FiltersForm
-        value={filters}
+        value={filters ?? DEFAULT_FILTERS}
         onSubmit={setFilters}   // lifts draft → filters state
       />
 
       {/* Resume (pdf) upload*/}
-      <ResumeUpload />
+      <ResumeUpload onParsed={handleResumeDone} />
+
+      {loading && <p>Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
 
       {/* ➋ Existing results grid (shows all jobs) */}
       <JobGrid items={allJobs} />
