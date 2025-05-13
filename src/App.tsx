@@ -33,7 +33,7 @@ function App() {
     (async () => {
       try {
         setLoading(true); setError(null);
-        setAllJobs(await fetchJobs(filters));
+        setAllJobs(await fetchJobs(filters, ctrl.signal));
       } catch (e: any) {
         if (e.name !== "AbortError") setError(e.message ?? "Network error");
       } finally { setLoading(false); }

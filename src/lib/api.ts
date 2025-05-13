@@ -35,31 +35,31 @@ function qs(f: JobFilters) {
 /* --------------------------------- */
 /* endpoint-specific helpers         */
 /* --------------------------------- */
-async function getJSON<T>(url: string): Promise<T> {
-    const res = await fetch(url);
+async function getJSON<T>(url: string, signal?: AbortSignal): Promise<T> {
+    const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`${url}: ${res.statusText}`);
     return res.json() as Promise<T>;
 }
 
-const fetchATSJobs = (f: JobFilters) =>
-    getJSON<JobListing[]>(`${API}/fetch_jobs?${qs(f)}`);
+const fetchATSJobs = (f: JobFilters, signal?: AbortSignal) =>
+    getJSON<JobListing[]>(`${API}/fetch_jobs?${qs(f)}`, signal);
 
-const fetchInternships = (f: JobFilters) =>
-    getJSON<JobListing[]>(`${API}/fetch_internships?${qs(f)}`);
+const fetchInternships = (f: JobFilters, signal?: AbortSignal) =>
+    getJSON<JobListing[]>(`${API}/fetch_internships?${qs(f)}`, signal);
 
-const fetchYCJobs = (f: JobFilters) =>
-    getJSON<JobListing[]>(`${API}/fetch_yc_jobs?${qs(f)}`);
+const fetchYCJobs = (f: JobFilters, signal?: AbortSignal) =>
+    getJSON<JobListing[]>(`${API}/fetch_yc_jobs?${qs(f)}`, signal);
 
 /* --------------------------------- */
 /* ONE public dispatcher             */
 /* --------------------------------- */
-export async function fetchJobs(f: JobFilters): Promise<JobListing[]> {
+export async function fetchJobs(f: JobFilters, signal?: AbortSignal): Promise<JobListing[]> {
     switch (f.roleType) {
         case "INTERN":
-            return fetchInternships(f);
+            return fetchInternships(f, signal);
 
         case "FT":
-            return fetchATSJobs({ ...f, roleType: "FT" });
+            return fetchATSJobs(f, signal);
 
         case "YC":
             return fetchYCJobs(f);
@@ -68,9 +68,9 @@ export async function fetchJobs(f: JobFilters): Promise<JobListing[]> {
         default: {
             // parallel requests, then flatten
             const [ats, internships, yc] = await Promise.all([
-                fetchATSJobs(f),
-                fetchInternships(f),
-                fetchYCJobs(f),
+                fetchATSJobs(f, signal),
+                fetchInternships(f, signal),
+                fetchYCJobs(f, signal),
             ]);
             return [...ats, ...internships, ...yc];
         }
