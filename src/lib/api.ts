@@ -62,7 +62,7 @@ export async function fetchJobs(f: JobFilters, signal?: AbortSignal): Promise<Jo
             return fetchATSJobs(f, signal);
 
         case "YC":
-            return fetchYCJobs(f);
+            return fetchYCJobs(f, signal);
 
         case "ALL":
         default: {
