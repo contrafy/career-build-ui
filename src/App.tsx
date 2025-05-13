@@ -3,10 +3,11 @@ import JobGrid from "./components/ui/JobGrid";
 import FiltersForm from "./components/ui/FiltersForm";
 import ResumeUpload from "./components/ui/ResumeUpload"
 
-import jobsData from "../example_responses/fetch_jobs.json";
-import ycData from "../example_responses/fetch_yc_jobs.json";
-import internData from "../example_responses/fetch_internships.json";
+// import jobsData from "../example_responses/fetch_jobs.json";
+// import ycData from "../example_responses/fetch_yc_jobs.json";
+// import internData from "../example_responses/fetch_internships.json";
 
+import { fetchJobs }  from "@/lib/api";
 import type { JobListing } from "./components/ui/JobCard";
 import type { JobFilters } from "./components/ui/FiltersForm";
 
@@ -20,46 +21,46 @@ const DEFAULT_FILTERS: JobFilters = {
 };
 
 function App() {
-  // State that *will* drive real API calls later
-  const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
-
-  // Your existing “all jobs” state + mock merge
+  const [filters, setFilters] = useState<JobFilters | null>(null);
   const [allJobs, setAllJobs] = useState<JobListing[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  /* fetch whenever filters change */
   useEffect(() => {
-    // pretend these came from a backend
-    setAllJobs([
-      ...(jobsData as JobListing[]),
-      ...(ycData as JobListing[]),
-      ...(internData as JobListing[]),
-    ]);
-  }, []);
-
-  // ------------ 2️⃣ New: placeholder effect that will host the fetch -------- //
-  //
-  // At the moment it just logs the filters so you can see the plumbing work.
-  //
-  useEffect(() => {
-    console.info("[Filters changed] → Ready to fetch with:", filters);
-    // TODO: swap this console.log for a real fetch:
-    // fetch(`/api/jobs?keyword=${filters.keyword}&location=${filters.location}&roleType=${filters.roleType}`)
-    //   .then(r => r.json())
-    //   .then(setAllJobs);
+    if (!filters) return;                 // first mount
+    const ctrl = new AbortController();
+    (async () => {
+      try {
+        setLoading(true); setError(null);
+        setAllJobs(await fetchJobs(filters, ctrl.signal));
+      } catch (e: any) {
+        if (e.name !== "AbortError") setError(e.message ?? "Network error");
+      } finally { setLoading(false); }
+    })();
+    return () => ctrl.abort();
   }, [filters]);
+
+  /* Merge GPT-generated hints */
+  const handleResumeDone = (payload: any) => { /* … unchanged … */ };
 
   return (
     <main className="mx-auto max-w-6xl p-6 space-y-10">
       <h1 className="text-3xl font-bold tracking-tight">Intelligent Job-Match</h1>
 
-      {/* ➊ New toolbar */}
+      {/* Toolbar */}
       <FiltersForm
-        value={filters}
+        value={filters ?? DEFAULT_FILTERS}
         onSubmit={setFilters}   // lifts draft → filters state
       />
 
       {/* Resume (pdf) upload*/}
-      <ResumeUpload />
+      <ResumeUpload onParsed={handleResumeDone} />
 
-      {/* ➋ Existing results grid (shows all jobs) */}
+      {loading && <p>Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
+
+      {/* Results grid (shows all jobs) */}
       <JobGrid items={allJobs} />
     </main>
   );
