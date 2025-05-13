@@ -8,6 +8,9 @@ import type { JobListing } from "../components/ui/JobCard";
 
 const API = "/api";        // vite proxy will forward this
 
+/* --------------------------------- */
+/* shared query-string builder       */
+/* --------------------------------- */
 function qs(f: JobFilters) {
     const p = new URLSearchParams();
     if (f.title) p.set("title_filter", f.title);
@@ -15,11 +18,12 @@ function qs(f: JobFilters) {
     if (f.location) p.set("location_filter", f.location);
     if (f.remote !== null) p.set("remote", String(f.remote));
 
-    if (f.roleType !== "ALL") {
+    // Translate roleType → backend enum WHEN NEEDED
+    if (f.roleType !== "ALL" && f.roleType !== "YC") {      // YC handled by endpoint
         const map: Record<JobFilters["roleType"], string> = {
             ALL: "",
             FT: "FULL_TIME",
-            YC: "YC_ONLY",
+            YC: "",
             INTERN: "INTERN",
         };
         p.set("ai_employment_type_filter", map[f.roleType]);
@@ -28,27 +32,48 @@ function qs(f: JobFilters) {
     return p.toString();
 }
 
-export async function fetchInternships(f: JobFilters) {
-    const p = new URLSearchParams();
-    if (f.title) p.set("title_filter", f.title);
-    if (f.description) p.set("description_filter", f.description);
-    if (f.location) p.set("location_filter", f.location);
-    if (f.remote !== null) p.set("remote", String(f.remote));
-    p.set("limit", "50");
-
-    const res = await fetch(`${API}/fetch_internships?${p.toString()}`);
-    if (!res.ok) throw new Error(`Internships API: ${res.statusText}`);
-    return (await res.json()) as JobListing[];
-  }
-
-/** Pull listings from all three endpoints and flatten them */
-export async function fetchAllJobs(f: JobFilters) {
-    const q = qs(f);
-    const [ats, internships, yc] = await Promise.all([
-        fetch(`${API}/fetch_jobs?${q}`).then(r => r.json()),
-        fetch(`${API}/fetch_internships?${q}`).then(r => r.json()),
-        fetch(`${API}/fetch_yc_jobs?${q}`).then(r => r.json()),
-    ]);
-    return [...ats, ...internships, ...yc] as JobListing[];
+/* --------------------------------- */
+/* endpoint-specific helpers         */
+/* --------------------------------- */
+async function getJSON<T>(url: string): Promise<T> {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url}: ${res.statusText}`);
+    return res.json() as Promise<T>;
 }
+
+const fetchATSJobs = (f: JobFilters) =>
+    getJSON<JobListing[]>(`${API}/fetch_jobs?${qs(f)}`);
+
+const fetchInternships = (f: JobFilters) =>
+    getJSON<JobListing[]>(`${API}/fetch_internships?${qs(f)}`);
+
+const fetchYCJobs = (f: JobFilters) =>
+    getJSON<JobListing[]>(`${API}/fetch_yc_jobs?${qs(f)}`);
+
+/* --------------------------------- */
+/* ONE public dispatcher             */
+/* --------------------------------- */
+export async function fetchJobs(f: JobFilters): Promise<JobListing[]> {
+    switch (f.roleType) {
+        case "INTERN":
+            return fetchInternships(f);
+
+        case "FT":
+            return fetchATSJobs({ ...f, roleType: "FT" });
+
+        case "YC":
+            return fetchYCJobs(f);
+
+        case "ALL":
+        default: {
+            // parallel requests, then flatten
+            const [ats, internships, yc] = await Promise.all([
+                fetchATSJobs(f),
+                fetchInternships(f),
+                fetchYCJobs(f),
+            ]);
+            return [...ats, ...internships, ...yc];
+        }
+    }
+  }
   
