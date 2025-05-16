@@ -3,7 +3,7 @@
 // A presentational form that just calls `onSubmit()` with the draft filters.
 // We use shadcn/ui primitives so styling matches the rest of your cards.
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -21,6 +21,7 @@ export interface JobFilters {
     location: string;
     remote: boolean | null;
     roleType: "ALL" | "FT" | "YC" | "INTERN";
+    limit: number | null
 }
 
 interface Props {
@@ -38,6 +39,18 @@ export default function FiltersForm({ value, onSubmit }: Props) {
     const update =
         <K extends keyof JobFilters>(key: K, val: JobFilters[K]) =>
             setDraft(prev => ({ ...prev, [key]: val }));
+    
+    /** returns the dropdown options that make sense for the current roleType */
+    const limitOptions = useMemo(() => {
+        switch (draft.roleType) {
+            case "FT": return [30, 50, 100];
+            case "YC":
+            case "INTERN": return [10, 20, 30, 40, 50];
+            default: return [];            // ALL → hidden
+        }
+    }, [draft.roleType]);
+
+    const showLimit = draft.roleType !== "ALL";
 
     return (
         <form
@@ -87,7 +100,10 @@ export default function FiltersForm({ value, onSubmit }: Props) {
 
             <Select
                 value={draft.roleType}
-                onValueChange={(v) => update("roleType", v as JobFilters["roleType"])}
+                onValueChange={(v) => {
+                    update("roleType", v as JobFilters["roleType"]);
+                    update("limit", null);
+                }}
             >
                 {/* Button-like control that shows the current choice */}
                 <SelectTrigger className="w-[160px]">
@@ -103,6 +119,23 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                 </SelectContent>
             </Select>
 
+            {showLimit && (
+                <Select
+                    value={String(draft.limit ?? limitOptions[0])}
+                    onValueChange={(v) => update("limit", Number(v))}
+                >
+                    <SelectTrigger className="w-[100px]">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {limitOptions.map((n) => (
+                            <SelectItem key={n} value={String(n)}>
+                                {n}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
 
             <Button type="submit">Apply</Button>
         </form>

@@ -18,6 +18,7 @@ const DEFAULT_FILTERS: JobFilters = {
   location: "",
   remote: null,
   roleType: "ALL",
+  limit: null,
 };
 
 function App() {
