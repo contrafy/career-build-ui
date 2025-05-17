@@ -14,6 +14,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
+type ButtonVariant = "default" | "secondary" | "destructive" | "success";
+
 interface Props {
   /** Called when the backend responds */
   onParsed?: (payload: any) => void;
@@ -108,6 +110,15 @@ export default function ResumeUpload({ onParsed }: Props) {
     ),
   } as const;
 
+  // map each state → shadcn button variant
+  const variantByState: Record<UploadState, ButtonVariant> = {
+    idle: "secondary",
+    uploading: "secondary",
+    success: "success",
+    saved: "secondary",
+    error: "destructive",
+  };
+
   // determine click behaviour based on current state
   const handleClick = () => {
     if (uploadState === "saved") {
@@ -141,12 +152,11 @@ export default function ResumeUpload({ onParsed }: Props) {
         >
           <Button
             size="lg"
+            variant={variantByState[uploadState]}
             onClick={handleClick}
             className={cn(
-              "flex items-center px-8 py-4 text-lg",
-              uploadState === "uploading" && "cursor-not-allowed opacity-80",
-              uploadState === "success" && "bg-green-600 hover:bg-green-700",
-              uploadState === "saved" && "bg-primary/90 hover:bg-primary"
+              "px-8 py-4 text-lg",
+              uploadState === "uploading" && "cursor-not-allowed opacity-80"
             )}
             disabled={uploadState === "uploading"}
           >
