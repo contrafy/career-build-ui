@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Briefcase, MapPin } from "lucide-react";
@@ -12,7 +12,7 @@ export interface JobListing {
     title?: string;
     organization?: string;
     locations_derived?: string[];
-    location_type?: string;
+    location_type?: string | null;
     url?: string;
     date_posted?: string;
     date_created?: string;

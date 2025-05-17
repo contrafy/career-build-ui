@@ -10,6 +10,8 @@ import ResumeUpload from "./components/ui/ResumeUpload"
 import { fetchJobs }  from "@/lib/api";
 import type { JobListing } from "./components/ui/JobCard";
 import type { JobFilters } from "./components/ui/FiltersForm";
+import sampleJobs from "@/assets/example_responses/fetch_jobs.json";
+
 
 import AuthContainer from "./components/ui/AuthContainer";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -26,7 +28,9 @@ const DEFAULT_FILTERS: JobFilters = {
 
 function App() {
   const [filters, setFilters] = useState<JobFilters | null>(null);
-  const [allJobs, setAllJobs] = useState<JobListing[]>([]);
+  const [allJobs, setAllJobs] = useState<JobListing[]>(
+    () => sampleJobs as unknown as JobListing[]   // lazy init, one‑time cast
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
