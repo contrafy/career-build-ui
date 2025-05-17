@@ -57,7 +57,7 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
   // abort controller stored across calls so we can cancel previous fetch
   const abortRef = useRef<AbortController | null>(null);
   
@@ -94,14 +94,14 @@ function App() {
   /* Apply resume-based filters to the current form */
   const handleResumeDone = (payload: LLMGeneratedFilters) => {
     console.log("Resume analyzed successfully:", payload);
-    
+
     // Store all filter sets for future role type switching
     setResumeFilters(payload);
-    
+
     // Select appropriate filters based on current roleType
     let activeFilters: Record<string, any> | undefined;
     const currentRoleType = filters?.roleType || DEFAULT_FILTERS.roleType;
-    
+
     if (currentRoleType === "INTERN" && payload.internships) {
       activeFilters = payload.internships;
     } else if (currentRoleType === "YC" && payload.yc_jobs) {
@@ -113,32 +113,32 @@ function App() {
       activeFilters = payload.jobs;
       console.log("Using jobs filters as fallback");
     }
-    
+
     if (activeFilters) {
       // Map backend filter names to our frontend form fields
       const newFilters: JobFilters = { ...filters || DEFAULT_FILTERS };
-      
+
       // Apply mappings for fields we know exist in our form
       if (activeFilters.title_filter) {
         newFilters.title = activeFilters.title_filter;
       }
-      
+
       if (activeFilters.description_filter) {
         newFilters.description = activeFilters.description_filter;
       }
-      
+
       if (activeFilters.location_filter) {
         newFilters.location = activeFilters.location_filter;
       }
-      
+
       if (activeFilters.remote !== undefined) {
         newFilters.remote = activeFilters.remote;
       }
-      
+
       if (activeFilters.limit && typeof activeFilters.limit === 'number') {
         newFilters.limit = activeFilters.limit;
       }
-      
+
       // Log any filters that were ignored (for future implementation)
       const mappedFields = ['title_filter', 'description_filter', 'location_filter', 'remote', 'limit'];
       Object.keys(activeFilters).forEach(key => {
@@ -146,7 +146,7 @@ function App() {
           console.log(`Ignored filter '${key}' with value:`, activeFilters[key]);
         }
       });
-      
+
       // Apply the new filters
       setFilters(newFilters);
     }
