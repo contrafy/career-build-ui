@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import JobGrid from "./components/JobGrid";
 import FiltersForm from "./components/FiltersForm";
-import ResumeUpload from "./components/ResumeUpload";
+import FileUpload from "./components/FileUpload";
 import { fetchJobs } from "@/lib/api";
 import type { JobListing } from "./components/JobCard";
 import type { JobFilters } from "./components/FiltersForm";
@@ -166,7 +166,10 @@ function App() {
         <FiltersForm value={filters ?? DEFAULT_FILTERS} onSubmit={applyFilters} />
 
         {/* Resume upload */}
-        <ResumeUpload onParsed={handleResumeDone} />
+        <div className="flex flex-wrap gap-6 justify-center">
+          <FileUpload kind="resume" onParsed={handleResumeDone} />
+          <FileUpload kind="cover-letter" />
+        </div>
 
         {loading && <p>Loading…</p>}
         {error && <p className="text-red-600">{error}</p>}
