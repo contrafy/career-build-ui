@@ -11,6 +11,9 @@ import { fetchJobs }  from "@/lib/api";
 import type { JobListing } from "./components/ui/JobCard";
 import type { JobFilters } from "./components/ui/FiltersForm";
 
+import AuthContainer from "./components/ui/AuthContainer";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 const DEFAULT_FILTERS: JobFilters = {
   title: "",
@@ -46,24 +49,31 @@ function App() {
   const handleResumeDone = (payload: any) => { /* … unchanged … */ };
 
   return (
-    <main className="mx-auto max-w-6xl p-6 space-y-10">
-      <h1 className="text-3xl font-bold tracking-tight">Intelligent Job-Match</h1>
+    <GoogleOAuthProvider clientId={CLIENT_ID}>
+      <main className="mx-auto max-w-6xl p-6 space-y-10">
+        {/* Google account button (top‑right) */}
+        <AuthContainer />
 
-      {/* Toolbar */}
-      <FiltersForm
-        value={filters ?? DEFAULT_FILTERS}
-        onSubmit={setFilters}   // lifts draft → filters state
-      />
+        <h1 className="text-3xl font-bold tracking-tight">
+          Intelligent Job‑Match
+        </h1>
 
-      {/* Resume (pdf) upload*/}
-      <ResumeUpload onParsed={handleResumeDone} />
+        {/* Toolbar */}
+        <FiltersForm
+          value={filters ?? DEFAULT_FILTERS}
+          onSubmit={setFilters}   // lifts draft → filters state
+        />
 
-      {loading && <p>Loading…</p>}
-      {error && <p className="text-red-600">{error}</p>}
+        {/* Resume (pdf) upload*/}
+        <ResumeUpload onParsed={handleResumeDone} />
 
-      {/* Results grid (shows all jobs) */}
-      <JobGrid items={allJobs} />
-    </main>
+        {loading && <p>Loading…</p>}
+        {error && <p className="text-red-600">{error}</p>}
+
+        {/* Results grid (shows all jobs) */}
+        <JobGrid items={allJobs} />
+      </main>
+    </GoogleOAuthProvider>
   );
 }
 
