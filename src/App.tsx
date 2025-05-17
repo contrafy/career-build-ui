@@ -6,6 +6,7 @@ import ResumeUpload from "./components/ui/ResumeUpload";
 import { fetchJobs } from "@/lib/api";
 import type { JobListing } from "./components/ui/JobCard";
 import type { JobFilters } from "./components/ui/FiltersForm";
+import sampleJobs from "@/assets/example_responses/fetch_jobs.json";
 
 // Define a type that represents the response from the resume parsing API
 interface LLMGeneratedFilters {
@@ -13,6 +14,10 @@ interface LLMGeneratedFilters {
   jobs?: Record<string, any>;
   yc_jobs?: Record<string, any>;
 }
+
+import AuthContainer from "./components/ui/AuthContainer";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 const DEFAULT_FILTERS: JobFilters = {
   // ───── Shared
@@ -47,7 +52,9 @@ const DEFAULT_FILTERS: JobFilters = {
 
 function App() {
   const [filters, setFilters] = useState<JobFilters | null>(null);
-  const [allJobs, setAllJobs] = useState<JobListing[]>([]);
+  const [allJobs, setAllJobs] = useState<JobListing[]>(
+    () => sampleJobs as unknown as JobListing[]   // lazy init, one‑time cast
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -135,24 +142,31 @@ function App() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl p-6 space-y-10">
-      <h1 className="text-3xl font-bold tracking-tight">Intelligent Job-Match</h1>
-      
-      {/* Toolbar */}
-      <FiltersForm
-        value={filters ?? DEFAULT_FILTERS}
-        onSubmit={setFilters}   // lifts draft → filters state
-      />
-      
-      {/* Resume (pdf) upload */}
-      <ResumeUpload onParsed={handleResumeDone} />
-      
-      {loading && <p>Loading…</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      
-      {/* Results grid (shows all jobs) */}
-      <JobGrid items={allJobs} />
-    </main>
+    <GoogleOAuthProvider clientId={CLIENT_ID}>
+      <main className="mx-auto max-w-6xl p-6 space-y-10">
+        {/* Google account button (top‑right) */}
+        <AuthContainer />
+
+        <h1 className="text-3xl font-bold tracking-tight">
+          Intelligent Job‑Match
+        </h1>
+
+        {/* Toolbar */}
+        <FiltersForm
+          value={filters ?? DEFAULT_FILTERS}
+          onSubmit={setFilters}   // lifts draft → filters state
+        />
+
+        {/* Resume (pdf) upload*/}
+        <ResumeUpload onParsed={handleResumeDone} />
+
+        {loading && <p>Loading…</p>}
+        {error && <p className="text-red-600">{error}</p>}
+
+        {/* Results grid (shows all jobs) */}
+        <JobGrid items={allJobs} />
+      </main>
+    </GoogleOAuthProvider>
   );
 }
 
