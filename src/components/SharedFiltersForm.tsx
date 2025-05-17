@@ -6,6 +6,7 @@
 import {
     Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
+import TemplateSelect from "./TemplateSelect";
 import { Input } from "@/components/ui/input";
 import type { JobFilters } from "@/components/FiltersForm";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,6 @@ interface Props {
 }
 
 export default function SharedFiltersForm({ draft, update }: Props) {
-    /* limit choices depend on roleType */
     const limitOptions =
         draft.roleType === "FT" ? [30, 50, 100] :
             draft.roleType === "YC" ||
@@ -28,12 +28,18 @@ export default function SharedFiltersForm({ draft, update }: Props) {
 
     return (
         <div className="flex flex-wrap gap-4">
-            <Input
-                placeholder="Title keywords…"
-                value={draft.title}
-                onChange={e => update("title", e.target.value)}
-                className="flex-1 min-w-[200px]"
-            />
+            <div className="flex gap-2 w-full">
+                <Input
+                    placeholder="Advanced title keywords…"
+                    value={draft.advancedTitle}
+                    onChange={e => update("advancedTitle", e.target.value)}
+                    className="flex-1"
+                />
+                <TemplateSelect
+                    value={draft.advancedTitle}
+                    onSelect={query => update("advancedTitle", query)}
+                />
+            </div>
 
             <Input
                 placeholder="Description keywords…"

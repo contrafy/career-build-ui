@@ -18,6 +18,7 @@ import {
 export interface JobFilters {
     // ───────────── Shared ────────────────────────────────────────────────────
     title: string;
+    advancedTitle: string;
     description: string;
     location: string;
     remote: boolean | null;

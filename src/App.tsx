@@ -22,6 +22,7 @@ const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 const DEFAULT_FILTERS: JobFilters = {
   // ───── Shared
   title: "",
+  advancedTitle: "",
   description: "",
   location: "",
   remote: null,

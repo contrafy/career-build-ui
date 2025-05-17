@@ -14,6 +14,7 @@ const API = "/api";  // vite proxy will forward this
 function qs(f: JobFilters, offset = 0, limitOverride?: number) {
     const p = new URLSearchParams();
     if (f.title) p.set("title_filter", f.title);
+    if (f.advancedTitle) p.set("advanced_title_filter", f.advancedTitle);
     if (f.description) p.set("description_filter", f.description);
     if (f.location) p.set("location_filter", f.location);
     if (f.remote !== null) p.set("remote", String(f.remote));
