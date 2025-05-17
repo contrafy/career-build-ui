@@ -58,7 +58,7 @@ export default function FTFiltersForm({ draft, update }: Props) {
             />
 
             <Select
-                value={draft.aiEmployment || "any"}
+                value={draft.aiEmployment ?? "any"}
                 onValueChange={v => update("aiEmployment", v === "any" ? "" : v)}
             >
                 <SelectTrigger className="w-[170px]">

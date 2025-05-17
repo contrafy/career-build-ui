@@ -6,8 +6,10 @@
 import {
     Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
+import TemplateSelect from "./TemplateSelect";
 import { Input } from "@/components/ui/input";
 import type { JobFilters } from "@/components/FiltersForm";
+import { Label } from "@/components/ui/label";
 
 interface Props {
     draft: JobFilters;
@@ -15,21 +17,29 @@ interface Props {
 }
 
 export default function SharedFiltersForm({ draft, update }: Props) {
-    /* limit choices depend on roleType */
     const limitOptions =
         draft.roleType === "FT" ? [30, 50, 100] :
             draft.roleType === "YC" ||
                 draft.roleType === "INTERN" ? [10, 20, 30, 40, 50] :
                 [];
+    
+    const effectiveLimit =
+        draft.limit ?? (draft.roleType === "FT" ? 100 : limitOptions[0]);
 
     return (
         <div className="flex flex-wrap gap-4">
-            <Input
-                placeholder="Title keywords…"
-                value={draft.title}
-                onChange={e => update("title", e.target.value)}
-                className="flex-1 min-w-[200px]"
-            />
+            <div className="flex gap-2 w-full">
+                <Input
+                    placeholder="Advanced title keywords…"
+                    value={draft.advancedTitle}
+                    onChange={e => update("advancedTitle", e.target.value)}
+                    className="flex-1"
+                />
+                <TemplateSelect
+                    value={draft.advancedTitle}
+                    onSelect={query => update("advancedTitle", query)}
+                />
+            </div>
 
             <Input
                 placeholder="Description keywords…"
@@ -45,41 +55,53 @@ export default function SharedFiltersForm({ draft, update }: Props) {
                 className="flex-1 min-w-[160px]"
             />
 
-            <Select
-                value={draft.remote === null ? "any" : draft.remote ? "true" : "false"}
-                onValueChange={v => update("remote", v === "any" ? null : v === "true")}
-            >
-                <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="Remote?" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    <SelectItem value="true">Remote</SelectItem>
-                    <SelectItem value="false">On-site</SelectItem>
-                </SelectContent>
-            </Select>
-
-            <Select
-                value={draft.roleType}
-                onValueChange={v => {                      // reset limit on change
-                    update("roleType", v as JobFilters["roleType"]);
-                    update("limit", null);
-                }}
-            >
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Role type" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="ALL">All</SelectItem>
-                    <SelectItem value="FT">Full-time</SelectItem>
-                    <SelectItem value="YC">Y Combinator</SelectItem>
-                    <SelectItem value="INTERN">Internships</SelectItem>
-                </SelectContent>
-            </Select>
-
-            {draft.roleType !== "ALL" && (
+            <div className="flex flex-col gap-2">
                 <Select
-                    value={String(draft.limit ?? limitOptions[0])}
+                    value={draft.remote === null ? "any" : draft.remote ? "true" : "false"}
+                    onValueChange={v => update("remote", v === "any" ? null : v === "true")}
+                >
+                    <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="Remote?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="any">Any</SelectItem>
+                        <SelectItem value="true">Remote</SelectItem>
+                        <SelectItem value="false">On-site</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Label
+                    htmlFor="remote-select"
+                    className="pl-2 text-xs font-medium leading-none text-muted-foreground"
+                >Remote / On-Site</Label>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <Select
+                    value={draft.roleType}
+                    onValueChange={v => {                      // reset limit on change
+                        update("roleType", v as JobFilters["roleType"]);
+                        update("limit", null);
+                    }}
+                >
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="Role type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="FT">Full-time</SelectItem>
+                        <SelectItem value="YC">Y Combinator</SelectItem>
+                        <SelectItem value="INTERN">Internships</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Label
+                    htmlFor="roleType-select"
+                    className="pl-2 text-xs font-medium leading-none text-muted-foreground"
+                >Role Type</Label>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <Select
+                    key={`limit-${draft.roleType}`}
+                    value={String(effectiveLimit)}
                     onValueChange={v => update("limit", Number(v))}
                 >
                     <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
@@ -88,8 +110,11 @@ export default function SharedFiltersForm({ draft, update }: Props) {
                             <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
                     </SelectContent>
                 </Select>
-            )}
+                <Label
+                    htmlFor="roleType-select"
+                    className="pl-2 text-xs font-medium leading-none text-muted-foreground"
+                >Limit</Label>
+            </div>
         </div>
     );
 }
-  

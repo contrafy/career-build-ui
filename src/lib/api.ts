@@ -14,6 +14,7 @@ const API = "/api";  // vite proxy will forward this
 function qs(f: JobFilters, offset = 0, limitOverride?: number) {
     const p = new URLSearchParams();
     if (f.title) p.set("title_filter", f.title);
+    if (f.advancedTitle) p.set("advanced_title_filter", f.advancedTitle);
     if (f.description) p.set("description_filter", f.description);
     if (f.location) p.set("location_filter", f.location);
     if (f.remote !== null) p.set("remote", String(f.remote));
@@ -35,16 +36,6 @@ export async function fetchJobs(
         YC: { route: "fetch_yc_jobs", default: 10, step: 10, apiCap: 10 },
         INTERN: { route: "fetch_internships", default: 10, step: 10, apiCap: 10 },
     } as const;
-
-    // ===== “ALL” short-circuit: fire three parallel requests with fixed limits
-    if (f.roleType === "ALL") {
-        const [ft, yc, intern] = await Promise.all([
-            doSingle(config.FT, 100, f, signal),
-            doPaged(config.YC, 50, f, signal),
-            doPaged(config.INTERN, 50, f, signal),
-        ]);
-        return [...ft, ...yc, ...intern];
-    }
 
     // ===== Specific roleType selected
     const cfg = config[f.roleType];
