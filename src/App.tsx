@@ -15,12 +15,34 @@ interface LLMGeneratedFilters {
 }
 
 const DEFAULT_FILTERS: JobFilters = {
+  // ───── Shared
   title: "",
   description: "",
   location: "",
   remote: null,
-  roleType: "ALL",
+  roleType: "YC",
   limit: null,
+
+  // ───── FT & Intern
+  includeAI: false,
+  aiWork: "",
+
+  // ───── Internships
+  agency: false,
+
+  // ───── Full-time
+  org: "",
+  source: "",
+  aiEmployment: "",
+  aiHasSalary: null,
+  aiExperience: "",
+  aiVisa: null,
+  includeLI: false,
+  liOrg: "",
+  liOrgExclude: "",
+  liIndustry: "",
+  liSpec: "",
+  liOrgDesc: "",
 };
 
 function App() {
