@@ -12,7 +12,7 @@ interface Props {
 }
 
 /** States the upload button can be in */
-type UploadState = "idle" | "uploading" | "success" | "error";
+type UploadState = "idle" | "uploading" | "success" | "saved" | "error";
 
 /* "choose file → POST /api/resume" widget with animations */
 export default function ResumeUpload({ onParsed }: Props) {
@@ -67,32 +67,32 @@ export default function ResumeUpload({ onParsed }: Props) {
   const buttonContent = {
     idle: (
       <>
-        <Upload className="mr-2 h-4 w-4" />
+        <Upload className="mr-2 h-5 w-5" />
         Upload résumé (PDF)
       </>
     ),
     uploading: (
       <>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
         Processing...
       </>
     ),
     success: (
       <>
-        <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+        <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
         Success!
       </>
     ),
     error: (
       <>
-        <Upload className="mr-2 h-4 w-4" />
+        <Upload className="mr-2 h-5 w-5" />
         Try again
       </>
     ),
   };
 
   return (
-    <div className="flex gap-3 items-center">
+    <div className="w-full flex flex-col items-center py-6 space-y-2">
       {/* hidden real <input> */}
       <Input
         ref={fileInput}
@@ -102,26 +102,38 @@ export default function ResumeUpload({ onParsed }: Props) {
         onChange={(e) => handleChange(e.target.files)}
       />
       
-      {/* visible animated button */}
+      {/* animated button */}
       <AnimatePresence mode="wait">
         <motion.div
           key={uploadState}
-          initial={{ width: "auto" }}
-          animate={{ width: "auto" }}
-          exit={{ width: "auto" }}
-          transition={{ duration: 0.2 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20, duration: 0.15 }}
         >
-          <Button 
-            size="sm" 
+          <Button
+            size="lg"
             onClick={() => fileInput.current?.click()}
             className={cn(
-              "flex items-center",
+              "flex items-center px-8 py-4 text-lg", // larger hit‑box
               uploadState === "uploading" && "cursor-not-allowed opacity-80",
               uploadState === "success" && "bg-green-600 hover:bg-green-700"
             )}
             disabled={uploadState === "uploading"}
           >
-            {buttonContent[uploadState]}
+            {/* fade/slide content transition */}
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={uploadState}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center"
+              >
+                {buttonContent[uploadState]}
+              </motion.span>
+            </AnimatePresence>
           </Button>
         </motion.div>
       </AnimatePresence>

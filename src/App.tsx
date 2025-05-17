@@ -148,7 +148,7 @@ function App() {
         <AuthContainer />
 
         <h1 className="text-3xl font-bold tracking-tight">
-          Intelligent Job‑Match
+          Intelligent Job-Match
         </h1>
 
         {/* Toolbar */}
