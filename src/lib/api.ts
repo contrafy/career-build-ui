@@ -31,9 +31,9 @@ export async function fetchJobs(
 ): Promise<JobListing[]> {
     // decide route(s), per-role defaults & caps
     const config = {
-        FT: { route: "fetch_active_jobs", default: 100, step: 100, apiCap: 100 },
-        YC: { route: "fetch_yc_jobs", default: 20, step: 10, apiCap: 10 },
-        INTERN: { route: "fetch_internships", default: 20, step: 10, apiCap: 10 },
+        FT: { route: "fetch_jobs", default: 100, step: 100, apiCap: 100 },
+        YC: { route: "fetch_yc_jobs", default: 10, step: 10, apiCap: 10 },
+        INTERN: { route: "fetch_internships", default: 10, step: 10, apiCap: 10 },
     } as const;
 
     // ===== “ALL” short-circuit: fire three parallel requests with fixed limits
