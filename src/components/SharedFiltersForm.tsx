@@ -7,7 +7,7 @@ import {
     Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import type { JobFilters } from "@/components/ui/FiltersForm";
+import type { JobFilters } from "@/components/FiltersForm";
 
 interface Props {
     draft: JobFilters;
