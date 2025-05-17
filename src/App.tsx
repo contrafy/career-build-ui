@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import JobGrid from "./components/ui/JobGrid";
 import FiltersForm from "./components/ui/FiltersForm";
 import ResumeUpload from "./components/ui/ResumeUpload";
@@ -57,28 +57,39 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
+  // abort controller stored across calls so we can cancel previous fetch
+  const abortRef = useRef<AbortController | null>(null);
+  
   // Track filters for each job type separately to support role-type switching
   const [resumeFilters, setResumeFilters] = useState<{
     internships?: Record<string, any>;
     jobs?: Record<string, any>;
     yc_jobs?: Record<string, any>;
   }>({});
+ 
+  /*──────── applyFilters: runs ONLY when user hits "Apply" ────────*/
+  const applyFilters = (newFilters: JobFilters) => {
+    // save latest filters for UI / future edits
+    setFilters(newFilters);
 
-  /* fetch whenever filters change */
-  useEffect(() => {
-    if (!filters) return;                 // first mount
+    // cancel any inflight request
+    abortRef.current?.abort();
     const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
     (async () => {
       try {
-        setLoading(true); setError(null);
-        setAllJobs(await fetchJobs(filters, ctrl.signal));
+        setLoading(true);
+        setError(null);
+        setAllJobs(await fetchJobs(newFilters, ctrl.signal));
       } catch (e: any) {
         if (e.name !== "AbortError") setError(e.message ?? "Network error");
-      } finally { setLoading(false); }
+      } finally {
+        setLoading(false);
+      }
     })();
-    return () => ctrl.abort();
-  }, [filters]);
+  };
 
   /* Apply resume-based filters to the current form */
   const handleResumeDone = (payload: LLMGeneratedFilters) => {
@@ -144,26 +155,18 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={CLIENT_ID}>
       <main className="mx-auto max-w-6xl p-6 space-y-10">
-        {/* Google account button (top‑right) */}
         <AuthContainer />
-
-        <h1 className="text-3xl font-bold tracking-tight">
-          Intelligent Job‑Match
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Intelligent Job‑Match</h1>
 
         {/* Toolbar */}
-        <FiltersForm
-          value={filters ?? DEFAULT_FILTERS}
-          onSubmit={setFilters}   // lifts draft → filters state
-        />
+        <FiltersForm value={filters ?? DEFAULT_FILTERS} onSubmit={applyFilters} />
 
-        {/* Resume (pdf) upload*/}
+        {/* Resume upload */}
         <ResumeUpload onParsed={handleResumeDone} />
 
         {loading && <p>Loading…</p>}
         {error && <p className="text-red-600">{error}</p>}
 
-        {/* Results grid (shows all jobs) */}
         <JobGrid items={allJobs} />
       </main>
     </GoogleOAuthProvider>
