@@ -3,7 +3,7 @@
 // A presentational form that just calls `onSubmit()` with the draft filters.
 // We use shadcn/ui primitives so styling matches the rest of your cards.
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -34,6 +34,10 @@ interface Props {
 export default function FiltersForm({ value, onSubmit }: Props) {
     // Keep a local draft so we’re not spamming state on every keystroke
     const [draft, setDraft] = useState<JobFilters>(value);
+
+    useEffect(() => {
+        setDraft(value);
+    }, [value]);
 
     /** Tiny helper that updates one field in the draft object */
     const update =
