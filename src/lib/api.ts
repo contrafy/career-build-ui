@@ -3,8 +3,8 @@
 // Centralised helper for talking to FastAPI via HTTP.
 //--------------------------------------------------------------
 
-import type { JobFilters } from "../components/ui/FiltersForm";
-import type { JobListing } from "../components/ui/JobCard";
+import type { JobFilters } from "../components/FiltersForm";
+import type { JobListing } from "../components/JobCard";
 
 const API = "/api";  // vite proxy will forward this
 

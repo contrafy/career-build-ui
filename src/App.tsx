@@ -1,11 +1,11 @@
 // src/App.tsx
 import { useRef, useState } from "react";
-import JobGrid from "./components/ui/JobGrid";
-import FiltersForm from "./components/ui/FiltersForm";
-import ResumeUpload from "./components/ui/ResumeUpload";
+import JobGrid from "./components/JobGrid";
+import FiltersForm from "./components/FiltersForm";
+import FileUpload from "./components/FileUpload";
 import { fetchJobs } from "@/lib/api";
-import type { JobListing } from "./components/ui/JobCard";
-import type { JobFilters } from "./components/ui/FiltersForm";
+import type { JobListing } from "./components/JobCard";
+import type { JobFilters } from "./components/FiltersForm";
 import sampleJobs from "@/assets/example_responses/fetch_jobs.json";
 
 // Define a type that represents the response from the resume parsing API
@@ -15,7 +15,7 @@ interface LLMGeneratedFilters {
   yc_jobs?: Record<string, any>;
 }
 
-import AuthContainer from "./components/ui/AuthContainer";
+import AuthContainer from "./components/AuthContainer";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
@@ -155,14 +155,21 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={CLIENT_ID}>
       <main className="mx-auto max-w-6xl p-6 space-y-10">
-        <AuthContainer />
-        <h1 className="text-3xl font-bold tracking-tight">Intelligent Job‑Match</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Career Builder</h1>
+          <AuthContainer />
+        </div>
+
+        {/* Filters */}
 
         {/* Toolbar */}
         <FiltersForm value={filters ?? DEFAULT_FILTERS} onSubmit={applyFilters} />
 
         {/* Resume upload */}
-        <ResumeUpload onParsed={handleResumeDone} />
+        <div className="flex flex-wrap gap-6 justify-center">
+          <FileUpload kind="resume" onParsed={handleResumeDone} />
+          <FileUpload kind="cover-letter" />
+        </div>
 
         {loading && <p>Loading…</p>}
         {error && <p className="text-red-600">{error}</p>}
