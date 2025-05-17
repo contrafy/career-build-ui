@@ -36,16 +36,6 @@ export async function fetchJobs(
         INTERN: { route: "fetch_internships", default: 10, step: 10, apiCap: 10 },
     } as const;
 
-    // ===== “ALL” short-circuit: fire three parallel requests with fixed limits
-    if (f.roleType === "ALL") {
-        const [ft, yc, intern] = await Promise.all([
-            doSingle(config.FT, 100, f, signal),
-            doPaged(config.YC, 50, f, signal),
-            doPaged(config.INTERN, 50, f, signal),
-        ]);
-        return [...ft, ...yc, ...intern];
-    }
-
     // ===== Specific roleType selected
     const cfg = config[f.roleType];
     const limit = f.limit ?? cfg.default;

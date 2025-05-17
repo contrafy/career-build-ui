@@ -21,7 +21,7 @@ export interface JobFilters {
     description: string;
     location: string;
     remote: boolean | null;
-    roleType: "ALL" | "FT" | "YC" | "INTERN";
+    roleType: "FT" | "YC" | "INTERN";
     limit: number | null;
 
     // ───────────── FT & Internships ──────────────────────────────────────────
@@ -36,7 +36,7 @@ export interface JobFilters {
     source: string;
     aiEmployment: string;         // FULL_TIME / PART_TIME / …
     aiHasSalary: boolean | null;
-    aiExperience: string;          // 0-2 / 2-5 / 5-10 / 10+
+    aiExperience: string | null;          // 0-2 / 2-5 / 5-10 / 10+
     aiVisa: boolean | null;
     includeLI: boolean;
     liOrg: string;
@@ -68,7 +68,8 @@ export default function FiltersForm({ value, onSubmit }: Props) {
             <SharedFiltersForm draft={draft} update={update} />
 
             {/* ───── Role-specific extras ───────────── */}
-            <DropdownMenu>
+            {/* Remove for now */}
+            {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline">More&nbsp;filters</Button>
                 </DropdownMenuTrigger>
@@ -82,14 +83,13 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                         <FTFiltersForm draft={draft} update={update} />
                     )}
 
-                    {(draft.roleType === "YC" || draft.roleType === "ALL") && (
+                    {draft.roleType === "YC" && (
                         <p className="text-sm text-muted-foreground">
                             No additional filters for this role type.
                         </p>
                     )}
                 </DropdownMenuContent>
-            </DropdownMenu>
-            {/* YC & ALL have no extra fields */}
+            </DropdownMenu> */}
 
             <Button type="submit">Apply</Button>
         </form>

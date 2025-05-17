@@ -106,7 +106,7 @@ function App() {
       activeFilters = payload.internships;
     } else if (currentRoleType === "YC" && payload.yc_jobs) {
       activeFilters = payload.yc_jobs;
-    } else if ((currentRoleType === "FT" || currentRoleType === "ALL") && payload.jobs) {
+    } else if ((currentRoleType === "FT") && payload.jobs) {
       activeFilters = payload.jobs;
     } else if (payload.jobs) {
       // Default to regular jobs if we can't match
