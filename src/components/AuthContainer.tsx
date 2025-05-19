@@ -27,6 +27,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import UserProfile from "./UserProfile";
+import UserSettings from "./UserSettings";
 
 /* ------------------------------------------------------------------ */
 /* Types & context                                                    */
@@ -58,6 +60,8 @@ export const useAuth = () => {
 export default function AuthContainer({ children }: { children?: ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   /* --- Sign‑in helper -------------------------------------------- */
   const login = useGoogleLogin({
@@ -89,55 +93,83 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
     googleLogout();
     setUser(null);
     setToken(null);
+    setProfileOpen(false);
+    setSettingsOpen(false);
   };
 
   /* --------------------------------------------------------------- */
   return (
     <AuthContext.Provider value={{ user, accessToken: token, logout }}>
-      {/* The actual button / menu */}
       <div className="flex justify-end">
         {!user ? (
-          <Button variant="outline" size="sm" onClick={() => login()} className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => login()}
+            className="gap-2"
+          >
             <LogIn className="size-4" />
             Sign in with Google
           </Button>
         ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted transition-colors"
-              >
-                <Avatar className="size-6">
-                  <AvatarImage src={user.picture} />
-                  <AvatarFallback>{user.name[0].toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium max-w-[8rem] truncate">
-                  {user.name}
-                </span>
-                <ChevronDown className="size-4" />
-              </motion.button>
-            </DropdownMenuTrigger>
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted transition-colors"
+                >
+                  <Avatar className="size-6">
+                    <AvatarImage src={user.picture} />
+                    <AvatarFallback>
+                      {user.name[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium max-w-[8rem] truncate">
+                    {user.name}
+                  </span>
+                  <ChevronDown className="size-4" />
+                </motion.button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem className="gap-2">
-                <UserIcon className="size-4" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
-                <Settings className="size-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout} className="gap-2 text-red-600">
-                <LogOut className="size-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem
+                  className="gap-2"
+                  onSelect={() => setProfileOpen(true)}    // ← open profile dialog
+                >
+                  <UserIcon className="size-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2"
+                  onSelect={() => setSettingsOpen(true)}   // ← open settings dialog
+                >
+                  <Settings className="size-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="gap-2 text-red-600"
+                >
+                  <LogOut className="size-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* render dialogs */}
+            <UserProfile
+              open={profileOpen}
+              onOpenChange={setProfileOpen}
+            />
+            <UserSettings
+              open={settingsOpen}
+              onOpenChange={setSettingsOpen}
+            />
+          </>
         )}
       </div>
 
-      {/* Optional children if you want to wrap other stuff */}
       {children}
     </AuthContext.Provider>
   );
