@@ -18,6 +18,8 @@ function qs(f: JobFilters, offset = 0, limitOverride?: number) {
     if (f.description) p.set("description_filter", f.description);
     if (f.location) p.set("location_filter", f.location);
     if (f.remote !== null) p.set("remote", String(f.remote));
+    if (f.resumeId) p.set("resume_id", f.resumeId);
+
     if (offset) p.set("offset", String(offset));
     if (limitOverride) p.set("limit", String(limitOverride));
     return p.toString();
@@ -75,18 +77,18 @@ export async function fetchJobs(
 
 /** One-and-done call (active jobs supports up to 100 rows at once) */
 async function doSingle(
-    cfg: { route: string },
-    limit: number,
-    f: JobFilters,
-    signal?: AbortSignal
+  cfg: { route: string },
+  limit: number,
+  f: JobFilters,
+  signal?: AbortSignal
 ) {
-    const res = await fetch(
-        `${API}/${cfg.route}?${qs(f, 0, limit)}`,
-        { signal }
-    );
-    if (!res.ok) throw new Error(`Server ${res.status}`);
-    const raw  = await res.json();
-    return toArray(raw).slice(0, limit);
+  const res = await fetch(
+    `${API}/${cfg.route}?${qs(f, 0, limit)}`,
+    { signal }
+  );
+  if (!res.ok) throw new Error(`Server ${res.status}`);
+  const raw = await res.json();
+  return toArray(raw).slice(0, limit);
 }
 
 /** Repeated calls in 10-row pages until we gather `limit` or the API dries up

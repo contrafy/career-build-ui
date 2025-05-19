@@ -49,6 +49,8 @@ export interface JobFilters {
     liIndustry: string;
     liSpec: string;
     liOrgDesc: string;
+
+    resumeId?: string | null;
 }
 
 interface Props {

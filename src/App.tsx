@@ -58,6 +58,8 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [resumeId, setResumeId] = useState<string | null>(null);
   
   // abort controller stored across calls so we can cancel previous fetch
   const abortRef = useRef<AbortController | null>(null);
@@ -70,12 +72,13 @@ function App() {
   }>({});
  
   /*──────── applyFilters: runs ONLY when user hits "Apply" ────────*/
-  const applyFilters = (newFilters: JobFilters) => {
+  const applyFilters = (draft: JobFilters) => {
     // inject default limit based on roleType
     const filtersWithLimit: JobFilters = {
-      ...newFilters,
-      limit: newFilters.limit ?? (newFilters.roleType === "FT" ? 30 : 10),
-    };
+    ...draft,
+    limit: draft.limit ?? (draft.roleType === "FT" ? 30 : 10),
+    resumeId,
+  };
 
     // save latest filters for UI / future edits
     setFilters(filtersWithLimit);
@@ -100,8 +103,9 @@ function App() {
   };
 
   /* Apply resume-based filters to the current form */
-  const handleResumeDone = (payload: LLMGeneratedFilters) => {
+  const handleResumeDone = (payload: LLMGeneratedFilters & { resume_id?: string }) => {
     console.log("Resume analyzed successfully:", payload);
+    if (payload.resume_id) setResumeId(payload.resume_id);
 
     // Store all filter sets for future role type switching
     setResumeFilters(payload);
@@ -177,7 +181,11 @@ function App() {
 
         {/* Resume upload */}
         <div className="flex flex-wrap gap-6 justify-center">
-          <FileUpload kind="resume" onParsed={handleResumeDone} />
+          <FileUpload
+            kind="resume"
+            onParsed={handleResumeDone}
+            onFile={() => {}}
+          />
           <FileUpload kind="cover-letter" />
         </div>
 
