@@ -50,7 +50,7 @@ export interface JobFilters {
     liSpec: string;
     liOrgDesc: string;
 
-    resumeId?: string | null;
+    // resumeId?: string | null;
 }
 
 interface Props {

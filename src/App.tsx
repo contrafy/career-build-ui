@@ -13,6 +13,7 @@ interface LLMGeneratedFilters {
   internships?: Record<string, any>;
   jobs?: Record<string, any>;
   yc_jobs?: Record<string, any>;
+  resumeText?: string;
 }
 
 import AuthContainer from "./components/AuthContainer";
@@ -59,8 +60,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [resumeId, setResumeId] = useState<string | null>(null);
-  
+  const [resumeText, setResumeText] = useState<string | null>(null);
+
   // abort controller stored across calls so we can cancel previous fetch
   const abortRef = useRef<AbortController | null>(null);
   
@@ -77,7 +78,6 @@ function App() {
     const filtersWithLimit: JobFilters = {
     ...draft,
     limit: draft.limit ?? (draft.roleType === "FT" ? 30 : 10),
-    resumeId,
   };
 
     // save latest filters for UI / future edits
@@ -93,7 +93,7 @@ function App() {
         setLoading(true);
         setError(null);
         // use our filtersWithLimit here
-        setAllJobs(await fetchJobs(filtersWithLimit, ctrl.signal));
+        setAllJobs(await fetchJobs(filtersWithLimit, resumeText ?? undefined, ctrl.signal));
       } catch (e: any) {
         if (e.name !== "AbortError") setError(e.message ?? "Network error");
       } finally {
@@ -103,9 +103,9 @@ function App() {
   };
 
   /* Apply resume-based filters to the current form */
-  const handleResumeDone = (payload: LLMGeneratedFilters & { resume_id?: string }) => {
+  const handleResumeDone = (payload: LLMGeneratedFilters) => {
     console.log("Resume analyzed successfully:", payload);
-    if (payload.resume_id) setResumeId(payload.resume_id);
+    if (payload.resumeText) setResumeText(payload.resumeText);
 
     // Store all filter sets for future role type switching
     setResumeFilters(payload);

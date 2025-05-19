@@ -18,7 +18,6 @@ function qs(f: JobFilters, offset = 0, limitOverride?: number) {
     if (f.description) p.set("description_filter", f.description);
     if (f.location) p.set("location_filter", f.location);
     if (f.remote !== null) p.set("remote", String(f.remote));
-    if (f.resumeId) p.set("resume_id", f.resumeId);
 
     if (offset) p.set("offset", String(offset));
     if (limitOverride) p.set("limit", String(limitOverride));
@@ -50,6 +49,7 @@ function toArray(data: unknown): JobListing[] {
 /* --------------------------------- */
 export async function fetchJobs(
     f: JobFilters,
+    resumeText: string | null = null,
     signal?: AbortSignal
 ): Promise<JobListing[]> {
     // decide route(s), per-role defaults & caps
@@ -69,7 +69,7 @@ export async function fetchJobs(
         return doSingle(cfg, limit, f, signal);
     }
         */
-    return doSingle(cfg, limit, f, signal);
+    return doSingle(cfg, limit, f, signal, resumeText);
     // return doPaged(cfg, limit, f, signal);
 }
 
@@ -80,11 +80,17 @@ async function doSingle(
   cfg: { route: string },
   limit: number,
   f: JobFilters,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  resumeText?: string | null
 ) {
   const res = await fetch(
-    `${API}/${cfg.route}?${qs(f, 0, limit)}`,
-    { signal }
+    `${API}/${cfg.route}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filters: f, resumeText }),
+      signal,
+    }
   );
   if (!res.ok) throw new Error(`Server ${res.status}`);
   const raw = await res.json();
