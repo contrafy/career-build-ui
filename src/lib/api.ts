@@ -23,6 +23,26 @@ function qs(f: JobFilters, offset = 0, limitOverride?: number) {
     return p.toString();
 }
 
+function toArray(data: unknown): JobListing[] {
+  if (Array.isArray(data)) return data; 
+
+   if (data && typeof data === "object" && "code" in data) {
+    throw new Error(
+      (data as any).message ??
+      "Server returned an error while parsing your query"
+    );
+  }
+                 // already an array
+  if (data && typeof data === "object") {
+    for (const k of ["jobs", "yc_jobs", "internships", "results", "data"]) {
+      const v = (data as any)[k];
+      if (Array.isArray(v)) return v;                  // unwrap first match
+    }
+  }
+  console.warn("Unexpected jobs payload:", data);
+  return [];
+}
+
 /* --------------------------------- */
 /* main fetch exported to App.tsx    */
 /* --------------------------------- */
@@ -42,10 +62,13 @@ export async function fetchJobs(
     const limit = f.limit ?? cfg.default;
 
     // FT uses single call; YC/Intern might need paging
+    /*
     if (f.roleType === "FT") {
         return doSingle(cfg, limit, f, signal);
     }
-    return doPaged(cfg, limit, f, signal);
+        */
+    return doSingle(cfg, limit, f, signal);
+    // return doPaged(cfg, limit, f, signal);
 }
 
 /* ---------- helpers ---------- */
@@ -62,10 +85,11 @@ async function doSingle(
         { signal }
     );
     if (!res.ok) throw new Error(`Server ${res.status}`);
-    return (await res.json()) as JobListing[];
+    const raw  = await res.json();
+    return toArray(raw).slice(0, limit);
 }
 
-/** Repeated calls in 10-row pages until we gather `limit` or the API dries up */
+/** Repeated calls in 10-row pages until we gather `limit` or the API dries up
 async function doPaged(
     cfg: { route: string; step: number; apiCap: number },
     limit: number,
@@ -86,3 +110,4 @@ async function doPaged(
     }
     return all.slice(0, limit);   // trim any accidental over-fetch
 }
+    */
