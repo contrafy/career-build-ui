@@ -133,6 +133,10 @@ function App() {
         newFilters.title = activeFilters.title_filter;
       }
 
+      if (activeFilters.advanced_title_filter) {
+        newFilters.advancedTitle = activeFilters.advanced_title_filter;
+      }
+
       if (activeFilters.description_filter) {
         newFilters.description = activeFilters.description_filter;
       }
@@ -146,7 +150,7 @@ function App() {
       }
 
       // Log any filters that were ignored (for future implementation)
-      const mappedFields = ['title_filter', 'description_filter', 'location_filter', 'remote'];
+      const mappedFields = ['title_filter', 'advanced_title_filter', 'description_filter', 'location_filter', 'remote'];
       Object.keys(activeFilters).forEach(key => {
         if (!mappedFields.includes(key) && activeFilters[key] !== undefined) {
           console.log(`Ignored filter '${key}' with value:`, activeFilters[key]);
