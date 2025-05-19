@@ -5,6 +5,10 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import TemplateSelect from "./TemplateSelect";
 import SharedFiltersForm from "./SharedFiltersForm";
 import InternFiltersForm from "./InternFiltersForm";
 import FTFiltersForm from "./FTFiltersForm";
@@ -62,11 +66,84 @@ export default function FiltersForm({ value, onSubmit }: Props) {
 
     return (
         <form
-            className="mb-6 flex flex-wrap gap-4"
+            className="mb-6 flex flex-wrap gap-5"
             onSubmit={e => { e.preventDefault(); onSubmit(draft); }}
         >
+            <div className="flex gap-2 w-full">
+                <Input
+                    placeholder="Advanced title keywords…"
+                    value={draft.advancedTitle}
+                    onChange={e => update("advancedTitle", e.target.value)}
+                    className="flex-1"
+                />
+                <TemplateSelect
+                    value={draft.advancedTitle}
+                    onSelect={query => update("advancedTitle", query)}
+                />
+            </div>
+
+            <Input
+                placeholder="Description keywords…"
+                value={draft.description}
+                onChange={e => update("description", e.target.value)}
+                className="flex-1 min-w-[200px]"
+            />
+
+            <Input
+                placeholder="Location"
+                value={draft.location}
+                onChange={e => update("location", e.target.value)}
+                className="flex-1 min-w-[160px]"
+            />
+
+            <div className="flex flex-col gap-2">
+                <Select
+                    value={draft.remote === null ? "any" : draft.remote ? "true" : "false"}
+                    onValueChange={v => update("remote", v === "any" ? null : v === "true")}
+                >
+                    <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="Remote?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="any">Any</SelectItem>
+                        <SelectItem value="true">Remote</SelectItem>
+                        <SelectItem value="false">On-site</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Label
+                    htmlFor="remote-select"
+                    className="pl-2 text-xs font-medium leading-none text-muted-foreground"
+                >Remote / On-Site</Label>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <Select
+                    value={draft.roleType}
+                    onValueChange={v => {                      // reset limit on change
+                        update("roleType", v as JobFilters["roleType"]);
+                        update("limit", null);
+                    }}
+                >
+                    <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="Role type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="FT">Full-time</SelectItem>
+                        <SelectItem value="YC">Y Combinator</SelectItem>
+                        <SelectItem value="INTERN">Internships</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Label
+                    htmlFor="roleType-select"
+                    className="pl-2 text-xs font-medium leading-none text-muted-foreground"
+                >Role Type</Label>
+            </div>
+
+            <Button type="submit" className="w-[100px]">Search</Button>
+
             {/* ───── Always-visible shared fields ───── */}
-            <SharedFiltersForm draft={draft} update={update} />
+            {/* Remove for now />*/}
+            {/* <SharedFiltersForm draft={draft} update={update} />*/}
 
             {/* ───── Role-specific extras ───────────── */}
             {/* Remove for now */}
@@ -91,8 +168,6 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                     )}
                 </DropdownMenuContent>
             </DropdownMenu> */}
-
-            <Button type="submit">Apply</Button>
         </form>
     );
-  }
+}

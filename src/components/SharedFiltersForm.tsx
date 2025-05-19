@@ -17,15 +17,6 @@ interface Props {
 }
 
 export default function SharedFiltersForm({ draft, update }: Props) {
-    const limitOptions =
-        draft.roleType === "FT" ? [30, 50, 100] :
-            draft.roleType === "YC" ||
-                draft.roleType === "INTERN" ? [10, 20, 30, 40, 50] :
-                [];
-    
-    const effectiveLimit =
-        draft.limit ?? (draft.roleType === "FT" ? 100 : limitOptions[0]);
-
     return (
         <div className="flex flex-wrap gap-4">
             <div className="flex gap-2 w-full">
@@ -96,24 +87,6 @@ export default function SharedFiltersForm({ draft, update }: Props) {
                     htmlFor="roleType-select"
                     className="pl-2 text-xs font-medium leading-none text-muted-foreground"
                 >Role Type</Label>
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <Select
-                    key={`limit-${draft.roleType}`}
-                    value={String(effectiveLimit)}
-                    onValueChange={v => update("limit", Number(v))}
-                >
-                    <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                        {limitOptions.map(n =>
-                            <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-                <Label
-                    htmlFor="roleType-select"
-                    className="pl-2 text-xs font-medium leading-none text-muted-foreground"
-                >Limit</Label>
             </div>
         </div>
     );

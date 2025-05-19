@@ -71,8 +71,14 @@ function App() {
  
   /*──────── applyFilters: runs ONLY when user hits "Apply" ────────*/
   const applyFilters = (newFilters: JobFilters) => {
+    // inject default limit based on roleType
+    const filtersWithLimit: JobFilters = {
+      ...newFilters,
+      limit: newFilters.limit ?? (newFilters.roleType === "FT" ? 30 : 10),
+    };
+
     // save latest filters for UI / future edits
-    setFilters(newFilters);
+    setFilters(filtersWithLimit);
 
     // cancel any inflight request
     abortRef.current?.abort();
@@ -83,7 +89,8 @@ function App() {
       try {
         setLoading(true);
         setError(null);
-        setAllJobs(await fetchJobs(newFilters, ctrl.signal));
+        // use our filtersWithLimit here
+        setAllJobs(await fetchJobs(filtersWithLimit, ctrl.signal));
       } catch (e: any) {
         if (e.name !== "AbortError") setError(e.message ?? "Network error");
       } finally {
@@ -118,6 +125,8 @@ function App() {
     if (activeFilters) {
       // Map backend filter names to our frontend form fields
       const newFilters: JobFilters = { ...filters || DEFAULT_FILTERS };
+      // inject default limit here too
+      newFilters.limit = newFilters.limit ?? (newFilters.roleType === "FT" ? 30 : 10);
 
       // Apply mappings for fields we know exist in our form
       if (activeFilters.title_filter) {
@@ -136,12 +145,8 @@ function App() {
         newFilters.remote = activeFilters.remote;
       }
 
-      if (activeFilters.limit && typeof activeFilters.limit === 'number') {
-        newFilters.limit = activeFilters.limit;
-      }
-
       // Log any filters that were ignored (for future implementation)
-      const mappedFields = ['title_filter', 'description_filter', 'location_filter', 'remote', 'limit'];
+      const mappedFields = ['title_filter', 'description_filter', 'location_filter', 'remote'];
       Object.keys(activeFilters).forEach(key => {
         if (!mappedFields.includes(key) && activeFilters[key] !== undefined) {
           console.log(`Ignored filter '${key}' with value:`, activeFilters[key]);
