@@ -10,6 +10,11 @@ export const FILTER_TEMPLATES: FilterTemplate[] = [
             '((data) & (science | engineer | scientist | engineering)) | ((software) & (development | engineer | developer | engineering))',
     },
     {
+        label: "Data science related (intern)",
+        query:
+            '(((data) & (science | engineer | scientist | engineering))) & (intern | internship)',
+    },
+    {
         label: "Data science & software engineering (intern)",
         query:
             '(((data) & (science | engineer | scientist | engineering)) | ((software) & (development | engineer | developer | engineering))) & (intern | internship)',
