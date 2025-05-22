@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import TemplateSelect from "./TemplateSelect";
+import KeywordBucket from "./KeywordBucket";
 import SharedFiltersForm from "./SharedFiltersForm";
 import InternFiltersForm from "./InternFiltersForm";
 import FTFiltersForm from "./FTFiltersForm";
@@ -81,6 +82,8 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                     onSelect={query => update("advancedTitle", query)}
                 />
             </div>
+
+            <KeywordBucket />
 
             <Input
                 placeholder="Description keywords…"
