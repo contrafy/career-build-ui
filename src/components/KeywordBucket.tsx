@@ -1,49 +1,59 @@
 // src/components/KeywordBucket.tsx
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
-export default function KeywordBucket() {
-    const [inputValue, setInputValue] = useState("");
-    const [keywords, setKeywords] = useState<string[]>([]);
+interface Props {
+    initial?: string[]
+    onChange?: (keywords: string[]) => void
+}
 
-    const addKeyword = () => {
-        const kw = inputValue.trim();
-        if (kw && !keywords.includes(kw)) {
-            setKeywords([...keywords, kw]);
-            setInputValue("");
-        }
-    };
+export default function KeywordBucket({ initial = [], onChange }: Props) {
+    const [input, setInput] = useState("")
+    const [keywords, setKeywords] = useState<string[]>(initial)
 
-    const removeKeyword = (kw: string) => {
-        setKeywords(keywords.filter(k => k !== kw));
-    };
+    // whenever our local keywords change, notify parent
+    useEffect(() => {
+        onChange?.(keywords)
+    }, [keywords, onChange])
+
+    const add = () => {
+        const kw = input.trim()
+        if (!kw || keywords.includes(kw)) return
+        setKeywords([...keywords, kw])
+        setInput("")
+    }
+
+    const remove = (kw: string) => {
+        setKeywords(keywords.filter(k => k !== kw))
+    }
 
     return (
         <div className="flex-1 min-w-[200px]">
             <div className="relative">
                 <Input
                     placeholder="Add keyword…"
-                    value={inputValue}
-                    onChange={e => setInputValue(e.target.value)}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && (e.preventDefault(), add())}
                     className="w-full pr-16"
-                    onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addKeyword())}
                 />
                 <Button
+                    type="button"
                     size="sm"
-                    onClick={addKeyword}
+                    onClick={add}
                     className="absolute top-1/2 right-1.5 -translate-y-1/2"
                 >
                     Add
                 </Button>
             </div>
-            <div className="mt-2 flex flex-wrap gap-1">
+            <div className="mt-2 flex flex-wrap gap-2">
                 {keywords.map(kw => (
                     <Badge key={kw} className="inline-flex items-center gap-1">
                         {kw}
                         <button
-                            onClick={() => removeKeyword(kw)}
+                            onClick={() => remove(kw)}
                             aria-label={`Remove ${kw}`}
                             className="text-xs leading-none"
                         >
@@ -53,5 +63,5 @@ export default function KeywordBucket() {
                 ))}
             </div>
         </div>
-    );
+    )
 }
