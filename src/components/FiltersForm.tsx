@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import TemplateSelect from "./TemplateSelect";
+import KeywordBucket from "./KeywordBucket";
 import SharedFiltersForm from "./SharedFiltersForm";
 import InternFiltersForm from "./InternFiltersForm";
 import FTFiltersForm from "./FTFiltersForm";
@@ -58,7 +59,13 @@ interface Props {
 
 export default function FiltersForm({ value, onSubmit }: Props) {
     const [draft, setDraft] = useState<JobFilters>(value);
-    useEffect(() => setDraft(value), [value]);
+    const [pendingKeywords, setPendingKeywords] = useState<string[]>([])
+    
+    useEffect(() => {
+        setDraft(value)
+        // reset bucket if you like:
+        setPendingKeywords([])
+    }, [value])
 
     const update =
         <K extends keyof JobFilters>(k: K, v: JobFilters[K]) =>
@@ -67,7 +74,11 @@ export default function FiltersForm({ value, onSubmit }: Props) {
     return (
         <form
             className="mb-6 flex flex-wrap gap-5"
-            onSubmit={e => { e.preventDefault(); onSubmit(draft); }}
+            onSubmit={(e) => {
+                e.preventDefault()
+                // only now do we merge bucket into your draft (if you ever want to)
+                onSubmit(draft)
+            }}
         >
             <div className="flex gap-2 w-full">
                 <Input
@@ -81,6 +92,11 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                     onSelect={query => update("advancedTitle", query)}
                 />
             </div>
+
+            <KeywordBucket
+                initial={[]}           // start empty
+                onChange={setPendingKeywords}
+            />
 
             <Input
                 placeholder="Description keywords…"
