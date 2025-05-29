@@ -80,12 +80,18 @@ async function doSingle(
     f: JobFilters,
     signal?: AbortSignal
 ) {
-    const res = await fetch(
-        `${API}/${cfg.route}?${qs(f, 0, limit)}`,
-        { signal }
-    );
+    const payload = JSON.stringify({ filters: f });
+
+    const res = await fetch(`${API}/${cfg.route}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        signal,
+    });
+
     if (!res.ok) throw new Error(`Server ${res.status}`);
-    const raw  = await res.json();
+
+    const raw = await res.json();
     return toArray(raw).slice(0, limit);
 }
 
