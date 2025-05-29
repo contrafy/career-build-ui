@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge"
 
 interface Props {
     initial?: string[]
+    placeholder?: string
     onChange?: (keywords: string[]) => void
 }
 
-export default function KeywordBucket({ initial = [], onChange }: Props) {
+export default function KeywordBucket({ initial = [], placeholder, onChange }: Props) {
     const [input, setInput] = useState("")
     const [keywords, setKeywords] = useState<string[]>(initial)
 
@@ -33,7 +34,7 @@ export default function KeywordBucket({ initial = [], onChange }: Props) {
         <div className="flex-1 min-w-[200px]">
             <div className="relative">
                 <Input
-                    placeholder="Add keyword…"
+                    placeholder={placeholder ?? "Add keyword…"}
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && (e.preventDefault(), add())}
