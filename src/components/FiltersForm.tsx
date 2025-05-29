@@ -5,10 +5,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import TemplateSelect from "./TemplateSelect";
 import KeywordBucket from "./KeywordBucket";
 
 // --- Types that mirror the eventual query params --------------------------- //
@@ -69,9 +67,18 @@ export default function FiltersForm({ value, onSubmit }: Props) {
     return (
         <form
             className="mb-6 flex flex-wrap gap-5"
-            onSubmit={(e) => {
-                e.preventDefault()
-                onSubmit(draft)
+            onSubmit={e => {
+                e.preventDefault();
+                const advancedTitle = titleKeywords.join("|");
+                const location = locationKeywords.join(" OR ");
+
+                const next: JobFilters = {
+                    ...draft,
+                    advancedTitle,
+                    location,
+                };
+
+                onSubmit(next);
             }}
         >
             <KeywordBucket
@@ -79,7 +86,6 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                 placeholder="Title keywords…"
                 onChange={setTitleKeywords}
             />
-
             <KeywordBucket
                 initial={[]}
                 placeholder="Location keywords…"
