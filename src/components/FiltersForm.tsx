@@ -10,14 +10,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Label } from "@/components/ui/label";
 import TemplateSelect from "./TemplateSelect";
 import KeywordBucket from "./KeywordBucket";
-import SharedFiltersForm from "./SharedFiltersForm";
-import InternFiltersForm from "./InternFiltersForm";
-import FTFiltersForm from "./FTFiltersForm";
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
 
 // --- Types that mirror the eventual query params --------------------------- //
 export interface JobFilters {
@@ -59,12 +51,15 @@ interface Props {
 
 export default function FiltersForm({ value, onSubmit }: Props) {
     const [draft, setDraft] = useState<JobFilters>(value);
-    const [pendingKeywords, setPendingKeywords] = useState<string[]>([])
+    const [titleKeywords, setTitleKeywords] = useState<string[]>([])
+    const [locationKeywords, setLocationKeywords] = useState<string[]>([])
+
     
     useEffect(() => {
         setDraft(value)
         // reset bucket if you like:
-        setPendingKeywords([])
+        setTitleKeywords([])
+        setLocationKeywords([])
     }, [value])
 
     const update =
@@ -76,40 +71,19 @@ export default function FiltersForm({ value, onSubmit }: Props) {
             className="mb-6 flex flex-wrap gap-5"
             onSubmit={(e) => {
                 e.preventDefault()
-                // only now do we merge bucket into your draft (if you ever want to)
                 onSubmit(draft)
             }}
         >
-            <div className="flex gap-2 w-full">
-                <Input
-                    placeholder="Advanced title keywords…"
-                    value={draft.advancedTitle}
-                    onChange={e => update("advancedTitle", e.target.value)}
-                    className="flex-1"
-                />
-                <TemplateSelect
-                    value={draft.advancedTitle}
-                    onSelect={query => update("advancedTitle", query)}
-                />
-            </div>
+            <KeywordBucket
+                initial={[]}
+                placeholder="Title keywords…"
+                onChange={setTitleKeywords}
+            />
 
             <KeywordBucket
-                initial={[]}           // start empty
-                onChange={setPendingKeywords}
-            />
-
-            <Input
-                placeholder="Description keywords…"
-                value={draft.description}
-                onChange={e => update("description", e.target.value)}
-                className="flex-1 min-w-[200px]"
-            />
-
-            <Input
-                placeholder="Location"
-                value={draft.location}
-                onChange={e => update("location", e.target.value)}
-                className="flex-1 min-w-[160px]"
+                initial={[]}
+                placeholder="Location keywords…"
+                onChange={setLocationKeywords}
             />
 
             <div className="flex flex-col gap-2">
