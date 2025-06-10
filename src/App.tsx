@@ -61,6 +61,8 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   
   /** Called by FiltersForm when a search completes (or fails) */
   const handleSearchComplete = (jobs: JobListing[] | null, err?: string) => {
@@ -101,11 +103,12 @@ function App() {
           initialTitleKeywords={titleSeed}
           initialLocationKeywords={locationSeed}
           setLoading={setLoading}
+          resumeFile={resumeFile}
         />
 
         {/* Resume upload */}
         <div className="flex flex-wrap gap-6 justify-center">
-          <FileUpload kind="resume" onParsed={handleResumeDone} />
+          <FileUpload kind="resume" onParsed={handleResumeDone} onFile={setResumeFile} />
           <FileUpload kind="cover-letter" />
         </div>
 
