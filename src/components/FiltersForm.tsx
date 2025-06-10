@@ -58,6 +58,7 @@ interface Props {
 
     /** Let parent show/hide spinner */
     setLoading: (b: boolean) => void;
+    resumeFile: File | null;
 }
 
 export default function FiltersForm({
@@ -66,6 +67,7 @@ export default function FiltersForm({
                                 initialLocationKeywords,
                                 onSearchComplete,
                                 setLoading,
+                                resumeFile,
                                 }: Props) {
     /** Local copy of the non‑keyword fields (remote, roleType, …) */
     const [draft, setDraft] = useState<JobFilters>(baseFilters);
@@ -104,7 +106,7 @@ export default function FiltersForm({
         console.log("doSearch", filters);
         setLoading(true);
         try {
-            const jobs = await fetchJobs(filters);
+            const jobs = await fetchJobs(filters, resumeFile ?? undefined);
             onSearchComplete(jobs);
         } catch (err: any) {
             onSearchComplete(null, err?.message ?? "Network error");

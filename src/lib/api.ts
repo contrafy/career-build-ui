@@ -8,21 +8,6 @@ import type { JobListing } from "../components/JobCard";
 
 const API = "/api";  // vite proxy will forward this
 
-/* --------------------------------- */
-/* shared query-string builder       */
-/* --------------------------------- */
-function qs(f: JobFilters, offset = 0, limitOverride?: number) {
-    const p = new URLSearchParams();
-    if (f.title) p.set("title_filter", f.title);
-    if (f.advancedTitle) p.set("advanced_title_filter", f.advancedTitle);
-    if (f.description) p.set("description_filter", f.description);
-    if (f.location) p.set("location_filter", f.location);
-    if (f.remote !== null) p.set("remote", String(f.remote));
-    if (offset) p.set("offset", String(offset));
-    if (limitOverride) p.set("limit", String(limitOverride));
-    return p.toString();
-}
-
 function toArray(data: unknown): JobListing[] {
   if (Array.isArray(data)) return data; 
 
@@ -48,6 +33,7 @@ function toArray(data: unknown): JobListing[] {
 /* --------------------------------- */
 export async function fetchJobs(
     f: JobFilters,
+    resume?: File,
     signal?: AbortSignal
 ): Promise<JobListing[]> {
     // decide route(s), per-role defaults & caps
@@ -62,14 +48,7 @@ export async function fetchJobs(
     const cfg = config[f.roleType];
     const limit = f.limit ?? cfg.default;
 
-    // FT uses single call; YC/Intern might need paging
-    /*
-    if (f.roleType === "FT") {
-        return doSingle(cfg, limit, f, signal);
-    }
-        */
-    return doSingle(cfg, limit, f, signal);
-    // return doPaged(cfg, limit, f, signal);
+    return doSingle(cfg, limit, f, resume, signal);
 }
 
 /* ---------- helpers ---------- */
@@ -79,14 +58,27 @@ async function doSingle(
     cfg: { route: string },
     limit: number,
     f: JobFilters,
+    resume?: File,
     signal?: AbortSignal
 ) {
-    const payload = JSON.stringify({ filters: f });
+    let body: BodyInit;
+    let headers: HeadersInit | undefined;
 
-    const res = await fetch(`${API}/${cfg.route}`, {
+    if (resume) {
+        const fd = new FormData();
+        fd.append("filters", JSON.stringify(f));
+        fd.append("resume", resume, resume.name);
+        body = fd;                        // browser sets multipart header
+        headers = undefined;
+    } else {
+        body = JSON.stringify({ filters: f });
+        headers = { "Content-Type": "application/json" };
+    }
+
+    const res = await fetch(`/api/${cfg.route}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
+        body,
+        headers,
         signal,
     });
 
@@ -95,26 +87,3 @@ async function doSingle(
     const raw = await res.json();
     return toArray(raw).slice(0, limit);
 }
-
-/** Repeated calls in 10-row pages until we gather `limit` or the API dries up
-async function doPaged(
-    cfg: { route: string; step: number; apiCap: number },
-    limit: number,
-    f: JobFilters,
-    signal?: AbortSignal
-) {
-    const all: JobListing[] = [];
-    for (let offset = 0; offset < limit; offset += cfg.step) {
-        const res = await fetch(
-            `${API}/${cfg.route}?${qs(f, offset)}`,
-            { signal }
-        );
-        if (!res.ok) throw new Error(`Server ${res.status}`);
-        const chunk: JobListing[] = await res.json();
-        all.push(...chunk);
-        // stop early if server ran out of records
-        if (chunk.length < cfg.apiCap) break;
-    }
-    return all.slice(0, limit);   // trim any accidental over-fetch
-}
-    */
