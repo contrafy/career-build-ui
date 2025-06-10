@@ -20,7 +20,7 @@ export interface JobFilters {
     description: string;
     location: string;
     remote: boolean | null;
-    roleType: "FT" | "YC" | "INTERN";
+    roleType: "FT" | "YC" | "INTERN" | "ADZUNA";
     limit: number | null;
 
     // ───────────── FT & Internships ──────────────────────────────────────────
@@ -84,8 +84,18 @@ export default function FiltersForm({
     }, [initialTitleKeywords]);
 
     useEffect(() => {
-        if (initialLocationKeywords) setLocationKeywords(initialLocationKeywords);
-    }, [initialLocationKeywords]);
+        setDraft(value);
+
+        const titles = value.advancedTitle
+            ? value.advancedTitle.split("|").map(s => s.trim()).filter(Boolean)
+            : [];
+        setTitleKeywords(titles);
+
+        const locs = value.location
+            ? value.location.split(" OR ").map(s => s.trim()).filter(Boolean)
+            : [];
+        setLocationKeywords(locs);
+    }, [value]);
 
     const update =
         <K extends keyof JobFilters>(k: K, v: JobFilters[K]) =>
@@ -166,6 +176,7 @@ export default function FiltersForm({
                         <SelectItem value="FT">Full-time</SelectItem>
                         <SelectItem value="YC">Y Combinator</SelectItem>
                         <SelectItem value="INTERN">Internships</SelectItem>
+                        <SelectItem value="ADZUNA">Adzuna</SelectItem>
                     </SelectContent>
                 </Select>
                 <Label

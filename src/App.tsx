@@ -6,6 +6,8 @@ import FileUpload from "./components/FileUpload";
 import { fetchJobs } from "@/lib/api";
 import type { JobListing } from "./components/JobCard";
 import type { JobFilters } from "./components/FiltersForm";
+import { ModeToggle } from "./components/ModeToggle";
+
 import sampleJobs from "@/assets/example_responses/fetch_jobs.json";
 
 // Define a type that represents the response from the resume parsing API
@@ -26,7 +28,7 @@ const DEFAULT_FILTERS: JobFilters = {
   description: "",
   location: "",
   remote: null,
-  roleType: "YC",
+  roleType: "ADZUNA",
   limit: null,
 
   // ───── FT & Intern
@@ -61,7 +63,7 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   
   /** Called by FiltersForm when a search completes (or fails) */
@@ -91,7 +93,10 @@ function App() {
       <main className="mx-auto max-w-6xl p-6 space-y-10">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Career Builder</h1>
-          <AuthContainer />
+          <div className="flex items-center space-x-4">
+            <ModeToggle />
+            <AuthContainer />
+          </div>
         </div>
 
         {/* Filters */}

@@ -41,6 +41,7 @@ export async function fetchJobs(
         FT: { route: "fetch_jobs", default: 100, step: 100, apiCap: 100 },
         YC: { route: "fetch_yc_jobs", default: 10, step: 10, apiCap: 10 },
         INTERN: { route: "fetch_internships", default: 10, step: 10, apiCap: 10 },
+        ADZUNA: { route: "fetch_adzuna_jobs", default: 50, step: 50, apiCap: 50 },
     } as const;
 
     // ===== Specific roleType selected

@@ -13,7 +13,7 @@ export interface JobListing {
     url?: string;
     date_posted?: string;
     date_created?: string;
-    rating?: number;            // ← the real LLM rating, if/when you add it
+    rating?: number;            // ← the real LLM rating, if/when we add it
 }
 
 interface Props {
@@ -27,10 +27,13 @@ const getRatingColor = (r: number) => {
 };
 
 const JobCard: FC<Props> = ({ job }) => {
-    // Pull rating out, but treat null *and* undefined the same (change later)
     const ratingValue = job.rating ?? 7.6;
+    const colorClass = getRatingColor(ratingValue);
 
-    const colorClass = getRatingColor(ratingValue);     // ← change ratingValue to job.rating later
+    const radius = 14;
+    const circumference = 2 * Math.PI * radius;
+    const arcLength = circumference * (120 / 360);                
+    const filledLength = (ratingValue / 10) * arcLength;
 
     const {
         title,
@@ -48,17 +51,36 @@ const JobCard: FC<Props> = ({ job }) => {
 
     return (
         <motion.div
+            className="overflow-visible"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.2 }}
         >
-            {/* Make this container relative so the badge can sit inside it */}
-            <Card className="relative w-full h-full rounded-2xl shadow-lg hover:shadow-xl transition">
-                <CardContent className="p-6 flex flex-col gap-3">
-                    {/* Always render the badge (fallback to constant until job.rating arrives) */}
-                    <div className="absolute top-4 right-4">
-                        <span className={`${colorClass}`}>
+            <Card className="relative w-full h-full rounded-2xl shadow-lg hover:shadow-xl transition overflow-visible">
+                <CardContent className="p-8 flex flex-col gap-3 overflow-visible">
+                    <div className="absolute top-1 right-4 flex flex-col items-center z-20">
+                        <svg width="32" height="32" viewBox="0 0 32 32" className="mb-1" style={{ overflow: "visible" }}>
+                            <circle
+                                cx="16" cy="16" r={radius}
+                                fill="none"
+                                stroke="#4A4A4A"
+                                strokeWidth="2"
+                                strokeDasharray={`${arcLength} ${circumference}`}
+                                transform="rotate(210 20 30)"          
+                            />
+                            <circle
+                                cx="16" cy="16" r={radius}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeDasharray={`${filledLength} ${circumference}`}
+                                strokeLinecap="round"
+                                transform="rotate(210 20 30)"          
+                                className={colorClass}
+                            />
+                        </svg>
+                        <span className={`${colorClass} font-semibold`}>
                             {ratingValue.toFixed(1)}
                         </span>
                     </div>
