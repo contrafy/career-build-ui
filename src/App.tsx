@@ -28,7 +28,7 @@ const DEFAULT_FILTERS: JobFilters = {
   description: "",
   location: "",
   remote: null,
-  roleType: "YC",
+  roleType: "ADZUNA",
   limit: null,
 
   // ───── FT & Intern
@@ -60,23 +60,25 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // abort controller stored across calls so we can cancel previous fetch
   const abortRef = useRef<AbortController | null>(null);
-  
+
   // Track filters for each job type separately to support role-type switching
   const [resumeFilters, setResumeFilters] = useState<{
     internships?: Record<string, any>;
     jobs?: Record<string, any>;
     yc_jobs?: Record<string, any>;
   }>({});
- 
+
   /*──────── applyFilters: runs ONLY when user hits "Apply" ────────*/
   const applyFilters = (newFilters: JobFilters) => {
     // inject default limit based on roleType
     const filtersWithLimit: JobFilters = {
       ...newFilters,
-      limit: newFilters.limit ?? (newFilters.roleType === "FT" ? 30 : 10),
+      limit: newFilters.limit ??
+             (newFilters.roleType === "FT" ? 30 :
+             newFilters.roleType === "ADZUNA" ? 50 : 10),
     };
 
     // save latest filters for UI / future edits
