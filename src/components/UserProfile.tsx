@@ -18,11 +18,11 @@ interface Props {
 
 export default function UserProfile({ open, onOpenChange }: Props) {
     const { user } = useAuth();
-    if (!user) return null;
+    if (!user) return null; // If no user, don't render anything
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            {/* Invisible trigger, since we open programmatically */}
+            {/* Trigger exists for accessibility */}
             <DialogTrigger asChild>
                 <span className="sr-only">Open profile</span>
             </DialogTrigger>
@@ -32,6 +32,7 @@ export default function UserProfile({ open, onOpenChange }: Props) {
                     <DialogTitle>Your Profile</DialogTitle>
                 </DialogHeader>
 
+                {/* User avatar and info */}
                 <div className="flex flex-col items-center gap-4 p-4">
                     <Avatar className="h-20 w-20">
                         <AvatarImage src={user.picture} />

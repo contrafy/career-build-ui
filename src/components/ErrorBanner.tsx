@@ -3,7 +3,7 @@ import React from "react";
 import { Toaster, toast } from "sonner";
 import { cn } from "@/lib/utils"; // your class-merge util
 
-// 1) The visual container (put this once in your app)
+// Renders toast container for error messages
 export const ErrorBanner: React.FC = () => (
     <Toaster
         position="top-center"
@@ -18,6 +18,7 @@ export const ErrorBanner: React.FC = () => (
     />
 );
 
+// Show error toast with warning icon
 export function showError(message: string) {
     toast.error(message, {
         icon: "⚠️",

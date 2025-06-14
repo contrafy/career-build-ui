@@ -19,26 +19,23 @@ export type UploadKind = "resume" | "cover-letter" | "cv";
 
 interface Props {
   kind: UploadKind;
-  /** Called only for résumé uploads when backend returns filter JSON */
+  // Called only for résumé uploads when backend returns filter JSON
   onParsed?: (payload: any) => void;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// INTERNAL TYPES & CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** Visual state machine */
+// Visual state machine
 type UploadState = "idle" | "uploading" | "success" | "saved" | "error";
-
-/** Map button state → shadcn variant */
+// Map button state → shadcn variant
 type ButtonVariant = "default" | "secondary" | "destructive" | "success";
 
+// Map each kind to its backend endpoint (null = no parsing endpoint)
 const endpointByKind: Record<UploadKind, string | null> = {
   resume: "/api/test_llm_resume_parsing",
   "cover-letter": null,
   cv: "/api/test_llm_resume_parsing",
 };
 
+// Choose icon based on current upload state
 const iconByState: Record<UploadState, LucideIcon> = {
   idle: Upload,
   uploading: Loader2,
@@ -47,6 +44,7 @@ const iconByState: Record<UploadState, LucideIcon> = {
   error: FileText,
 };
 
+// Choose button variant based on state
 const variantByState: Record<UploadState, ButtonVariant> = {
   idle: "secondary",
   uploading: "secondary",
@@ -55,27 +53,28 @@ const variantByState: Record<UploadState, ButtonVariant> = {
   error: "destructive",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default function FileUpload({ kind, onParsed }: Props) {
+  // User-facing label
   const kindLabel = kind === "cover-letter" ? "cover letter" : "résumé";
-
+  // Hidden file input reference
   const fileInput = useRef<HTMLInputElement>(null);
+  // Upload state machine
   const [uploadState, setUploadState] = useState<UploadState>("idle");
+  // Saved file reference for live preview
   const [savedFile, setSavedFile] = useState<File | null>(null);
+  // Dialog state for live preview
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Object‑URL for live preview
   const pdfUrl = useMemo(() => (savedFile ? URL.createObjectURL(savedFile) : ""), [savedFile]);
+  // Clean up URL object when component unmounts or file changes
   useEffect(() => {
     return () => {
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     };
   }, [pdfUrl]);
 
-  // ─────────────────────────── upload logic ────────────────────────────
+  // Send file to server and handle response
   async function sendFile(file: File) {
     setUploadState("uploading");
 
@@ -87,11 +86,12 @@ export default function FileUpload({ kind, onParsed }: Props) {
         const res = await fetch(endpoint, { method: "POST", body: fd });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        onParsed?.(data);
+        onParsed?.(data); // Notify parent of parsed payload
       }
-
+      // Mark success and save file for preview
       setSavedFile(file);
       setUploadState("success");
+      // After showing "Success!", switch to "saved" state for preview
       setTimeout(() => setUploadState("saved"), 1200);
     } catch (e: any) {
       showError(e.message ?? "Upload failed");
@@ -99,8 +99,9 @@ export default function FileUpload({ kind, onParsed }: Props) {
     }
   }
 
+  // Handle file input change
   const handleChange = (files: FileList | null) => {
-    if (!files?.[0]) return;
+    if (!files?.[0]) return; // No file selected
     if (files[0].type !== "application/pdf") {
       showError("Please upload a PDF");
       setUploadState("error");
@@ -109,7 +110,7 @@ export default function FileUpload({ kind, onParsed }: Props) {
     sendFile(files[0]);
   };
 
-  // ─────────────────────────── render helpers ──────────────────────────
+  // Button text per state
   const copyByState: Record<UploadState, string> = {
     idle: `Upload ${kindLabel} (PDF)`,
     uploading: "Processing…",
@@ -117,9 +118,9 @@ export default function FileUpload({ kind, onParsed }: Props) {
     saved: `View ${kindLabel}`,
     error: "Try again",
   };
-
   const Icon = iconByState[uploadState];
 
+  // Handle button clicks: open file dialog or show preview
   const handleClick = () => {
     if (uploadState === "saved") {
       setDialogOpen(true);
@@ -128,9 +129,9 @@ export default function FileUpload({ kind, onParsed }: Props) {
     }
   };
 
-  // ───────────────────────────── JSX ───────────────────────────────────
   return (
     <div className="flex flex-col items-center space-y-2">
+      {/* Hidden file input for PDF */}
       <Input
         ref={fileInput}
         type="file"
@@ -139,6 +140,7 @@ export default function FileUpload({ kind, onParsed }: Props) {
         onChange={(e) => handleChange(e.target.files)}
       />
 
+      {/* Animate button as state changes */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={uploadState}
@@ -171,6 +173,7 @@ export default function FileUpload({ kind, onParsed }: Props) {
         </motion.div>
       </AnimatePresence>
 
+      {/* PDF preview dialog after upload */}
       {savedFile && (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>

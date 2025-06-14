@@ -14,11 +14,12 @@ export default function KeywordBucket({ initial = [], placeholder, onChange }: P
     const [input, setInput] = useState("")
     const [keywords, setKeywords] = useState<string[]>(initial)
 
-    // whenever our local keywords change, notify parent
+    // Notify parent when keywords update
     useEffect(() => {
         onChange?.(keywords)
     }, [keywords, onChange])
 
+    // Add new keyword if non-empty and unique
     const add = () => {
         const kw = input.trim()
         if (!kw || keywords.includes(kw)) return
@@ -26,12 +27,14 @@ export default function KeywordBucket({ initial = [], placeholder, onChange }: P
         setInput("")
     }
 
+    // Remove a keyword by value
     const remove = (kw: string) => {
         setKeywords(keywords.filter(k => k !== kw))
     }
 
     return (
         <div className="flex-1 min-w-[200px]">
+            {/* Input + Add button */}
             <div className="relative">
                 <Input
                     placeholder={placeholder ?? "Add keyword…"}
@@ -49,6 +52,8 @@ export default function KeywordBucket({ initial = [], placeholder, onChange }: P
                     Add
                 </Button>
             </div>
+
+            {/* Display current keywords */}
             <div className="mt-2 flex flex-wrap gap-2">
                 {keywords.map(kw => (
                     <Badge key={kw} className="inline-flex items-center gap-1">

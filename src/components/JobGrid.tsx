@@ -1,4 +1,4 @@
-// src/components/ui/JobGrid.tsx
+// src/components/JobGrid.tsx
 import { useMemo } from "react";
 import type { FC } from "react";
 
@@ -11,14 +11,9 @@ import { FileSearch } from "lucide-react";
 interface Props {
   items: JobListing[];
 }
-
-/**
- * Responsive grid of <JobCard/>s. When the items list is empty **after** a
- * successful backend call, we show a friendly animated placeholder that nudges
- * the user to broaden their filters.
- */
+ // Displays a responsive grid of job cards.
 const JobGrid: FC<Props> = ({ items }) => {
-  // newest‑first sort (date_posted → date_created fallback)
+  // Sort items by most recent posting date (fallback to creation date)
   const sorted = useMemo(
     () =>
       [...items].sort(
@@ -29,8 +24,8 @@ const JobGrid: FC<Props> = ({ items }) => {
     [items]
   );
 
-  /* ──────────────────────────────── Empty state ───────────────────────────── */
   if (sorted.length === 0) {
+    // Placeholder when no jobs match filters
     return (
       <section className="mx-auto max-w-4xl py-20 flex flex-col items-center text-center space-y-4">
         <motion.div
@@ -48,7 +43,7 @@ const JobGrid: FC<Props> = ({ items }) => {
     );
   }
 
-  /* ─────────────────────────────── Populated grid ─────────────────────────── */
+  // Render grid of job cards
   return (
     <section className="mx-auto max-w-6xl p-4 grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
       <AnimatePresence>

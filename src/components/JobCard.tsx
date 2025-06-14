@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Briefcase, MapPin } from "lucide-react";
 
+// 
 export interface JobListing {
     id: string;
     title?: string;
@@ -13,13 +14,14 @@ export interface JobListing {
     url?: string;
     date_posted?: string;
     date_created?: string;
-    rating?: number;            // ← the real LLM rating, if/when we add it
+    rating?: number;
 }
 
 interface Props {
     job: JobListing;
 }
 
+// Color class based on rating thresholds
 const getRatingColor = (r: number) => {
     if (r <= 3.3) return "text-red-500";
     if (r <= 6.6) return "text-yellow-500";
@@ -30,6 +32,7 @@ const JobCard: FC<Props> = ({ job }) => {
     const ratingValue = job.rating ?? 7.6;
     const colorClass = getRatingColor(ratingValue);
 
+    // Circle arc calculations
     const radius = 14;
     const circumference = 2 * Math.PI * radius;
     const arcLength = circumference * (120 / 360);                
@@ -42,6 +45,7 @@ const JobCard: FC<Props> = ({ job }) => {
         location_type,
         url,
     } = job;
+    // Determine display location
     const location =
         location_type === "TELECOMMUTE"
             ? "Remote"
@@ -59,6 +63,7 @@ const JobCard: FC<Props> = ({ job }) => {
         >
             <Card className="relative w-full h-full rounded-2xl shadow-lg hover:shadow-xl transition overflow-visible">
                 <CardContent className="p-8 flex flex-col gap-3 overflow-visible">
+                    {/* Rating circle and value */}
                     <div className="absolute top-1 right-4 flex flex-col items-center z-20">
                         <svg width="32" height="32" viewBox="0 0 32 32" className="mb-1" style={{ overflow: "visible" }}>
                             <circle
@@ -85,18 +90,16 @@ const JobCard: FC<Props> = ({ job }) => {
                         </span>
                     </div>
 
+                    {/* Job listing details */}
                     <h3 className="text-lg font-semibold leading-tight">
                         {title ?? "Untitled role"}
                     </h3>
-
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Briefcase size={16} /> {organization ?? "Unknown company"}
                     </p>
-
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin size={16} /> {location}
                     </p>
-
                     {url && (
                         <a
                             href={url}

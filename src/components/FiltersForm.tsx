@@ -1,17 +1,12 @@
-// src/FiltersForm.tsx
-//
-// A presentational form that just calls `onSubmit()` with the draft filters.
-// We use shadcn/ui primitives so styling matches the rest of your cards.
-
+// src/components/FiltersForm.tsx
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import KeywordBucket from "./KeywordBucket";
 
-// --- Types that mirror the eventual query params --------------------------- //
+// Mirrors backend query parameters
 export interface JobFilters {
-    // ───────────── Shared ────────────────────────────────────────────────────
     title: string;
     advancedTitle: string;
     description: string;
@@ -19,27 +14,6 @@ export interface JobFilters {
     remote: boolean | null;
     roleType: "FT" | "YC" | "INTERN" | "ADZUNA";
     limit: number | null;
-
-    // ───────────── FT & Internships ──────────────────────────────────────────
-    includeAI: boolean;
-    aiWork: string | null;                // On-site / Hybrid / Remote OK / Remote Solely
-
-    // ───────────── Internships only ─────────────────────────────────────────
-    agency: boolean;
-
-    // ───────────── Full-time only ────────────────────────────────────────────
-    org: string;
-    source: string;
-    aiEmployment: string;         // FULL_TIME / PART_TIME / …
-    aiHasSalary: boolean | null;
-    aiExperience: string | null;          // 0-2 / 2-5 / 5-10 / 10+
-    aiVisa: boolean | null;
-    includeLI: boolean;
-    liOrg: string;
-    liOrgExclude: string;
-    liIndustry: string;
-    liSpec: string;
-    liOrgDesc: string;
 }
 
 interface Props {
@@ -48,11 +22,13 @@ interface Props {
 }
 
 export default function FiltersForm({ value, onSubmit }: Props) {
+    // Draft form values
     const [draft, setDraft] = useState<JobFilters>(value);
+    // Parsed keyword lists
     const [titleKeywords, setTitleKeywords] = useState<string[]>([])
     const [locationKeywords, setLocationKeywords] = useState<string[]>([])
 
-    
+    // Update draft and keyword arrays when parent value changes
     useEffect(() => {
         setDraft(value);
 
@@ -67,6 +43,7 @@ export default function FiltersForm({ value, onSubmit }: Props) {
         setLocationKeywords(locs);
     }, [value]);
 
+    // Helper to update a single field in draft
     const update =
         <K extends keyof JobFilters>(k: K, v: JobFilters[K]) =>
             setDraft(prev => ({ ...prev, [k]: v }));
@@ -76,6 +53,7 @@ export default function FiltersForm({ value, onSubmit }: Props) {
             className="mb-6 flex flex-wrap gap-5"
             onSubmit={e => {
                 e.preventDefault();
+                // Reconstruct filters from keywords
                 const advancedTitle = titleKeywords.join("|");
                 const location = locationKeywords.join(" OR ");
 
@@ -88,6 +66,7 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                 onSubmit(next);
             }}
         >
+            {/* Keyword inputs */}
             <KeywordBucket
                 initial={[]}
                 placeholder="Title keywords…"
@@ -99,6 +78,7 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                 onChange={setLocationKeywords}
             />
 
+            {/* Remote / On-site selector */}
             <div className="flex flex-col gap-2">
                 <Select
                     value={draft.remote === null ? "any" : draft.remote ? "true" : "false"}
@@ -119,10 +99,11 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                 >Remote / On-Site</Label>
             </div>
 
+            {/* Role type selector (resets limit on change) */}
             <div className="flex flex-col gap-2">
                 <Select
                     value={draft.roleType}
-                    onValueChange={v => {                      // reset limit on change
+                    onValueChange={v => {
                         update("roleType", v as JobFilters["roleType"]);
                         update("limit", null);
                     }}
@@ -144,34 +125,6 @@ export default function FiltersForm({ value, onSubmit }: Props) {
             </div>
 
             <Button type="submit" className="w-[100px]">Search</Button>
-
-            {/* ───── Always-visible shared fields ───── */}
-            {/* Remove for now />*/}
-            {/* <SharedFiltersForm draft={draft} update={update} />*/}
-
-            {/* ───── Role-specific extras ───────────── */}
-            {/* Remove for now */}
-            {/* <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline">More&nbsp;filters</Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent className="p-4 min-w-[26rem]">
-                    {draft.roleType === "INTERN" && (
-                        <InternFiltersForm draft={draft} update={update} />
-                    )}
-
-                    {draft.roleType === "FT" && (
-                        <FTFiltersForm draft={draft} update={update} />
-                    )}
-
-                    {draft.roleType === "YC" && (
-                        <p className="text-sm text-muted-foreground">
-                            No additional filters for this role type.
-                        </p>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu> */}
         </form>
     );
 }

@@ -18,12 +18,14 @@ interface Props {
 }
 
 export default function UserSettings({ open, onOpenChange }: Props) {
+    // Local state for each API key input
     const [rapidKey, setRapidKey] = useState("");
     const [openAIKey, setOpenAIKey] = useState("");
     const [groqKey, setGroqKey] = useState("");
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
+            {/* Invisible trigger; dialog opened programmatically */}
             <DialogTrigger asChild>
                 <span className="sr-only">Open settings</span>
             </DialogTrigger>
@@ -33,6 +35,7 @@ export default function UserSettings({ open, onOpenChange }: Props) {
                     <DialogTitle>API Keys</DialogTitle>
                 </DialogHeader>
 
+                {/* API key inputs */}
                 <div className="flex flex-col gap-4 p-4">
                     <div className="flex flex-col">
                         <Label htmlFor="rapid-api-key">RapidAPI Key</Label>
@@ -60,6 +63,7 @@ export default function UserSettings({ open, onOpenChange }: Props) {
                     </div>
                 </div>
 
+                {/* Close dialog and save inputs */}
                 <DialogClose asChild>
                     <Button variant="secondary" className="w-full">
                         Save

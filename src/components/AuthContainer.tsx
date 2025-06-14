@@ -1,3 +1,4 @@
+// src/components/AuthContainer.tsx
 import {
   createContext,
   useContext,
@@ -31,16 +32,14 @@ import UserProfile from "./UserProfile";
 import UserSettings from "./UserSettings";
 import { showError } from "./ErrorBanner"; 
 
-/* ------------------------------------------------------------------ */
-/* Types & context                                                    */
-/* ------------------------------------------------------------------ */
-
+// User profile info
 interface Profile {
   name: string;
   email: string;
   picture: string;
 }
 
+// Auth context
 interface AuthCtx {
   user: Profile | null;
   accessToken: string | null;
@@ -54,23 +53,19 @@ export const useAuth = () => {
   return ctx;
 };
 
-/* ------------------------------------------------------------------ */
-/* Component                                                          */
-/* ------------------------------------------------------------------ */
-
 export default function AuthContainer({ children }: { children?: ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  /* --- Sign‑in helper -------------------------------------------- */
+  // Trigger Google OAuth flow
   const login = useGoogleLogin({
     scope: "profile email",
     onSuccess: async (resp: TokenResponse) => {
       setToken(resp.access_token);
 
-      // Basic profile (no extra APIs needed)
+      // Fetch basic user info
       try {
         const res = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -88,7 +83,7 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
         return;
       }
 
-      // simple client‑side “refresh” – silently logs in 1 min pre‑expiry
+      // Schedule silent refresh one minute before expiry
       if (resp.expires_in) {
         setTimeout(() => login(), (resp.expires_in - 60) * 1000);
       }
@@ -96,7 +91,7 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
     onError: () => showError("Google login failed"),
   });
 
-  /* --- Sign‑out --------------------------------------------------- */
+  // Clear user and token
   const logout = () => {
     googleLogout();
     setUser(null);
@@ -105,7 +100,6 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
     setSettingsOpen(false);
   };
 
-  /* --------------------------------------------------------------- */
   return (
     <AuthContext.Provider value={{ user, accessToken: token, logout }}>
       <div className="flex justify-end">
@@ -143,14 +137,14 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem
                   className="gap-2"
-                  onSelect={() => setProfileOpen(true)}    // ← open profile dialog
+                  onSelect={() => setProfileOpen(true)}
                 >
                   <UserIcon className="size-4" />
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="gap-2"
-                  onSelect={() => setSettingsOpen(true)}   // ← open settings dialog
+                  onSelect={() => setSettingsOpen(true)}   
                 >
                   <Settings className="size-4" />
                   Settings
@@ -165,8 +159,8 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* render dialogs */}
-            <UserProfile
+              {/* Profile and settings dialogs */}
+              <UserProfile
               open={profileOpen}
               onOpenChange={setProfileOpen}
             />
