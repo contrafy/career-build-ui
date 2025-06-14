@@ -83,6 +83,7 @@ export default function FiltersForm({
         if (initialTitleKeywords) setTitleKeywords(initialTitleKeywords);
     }, [initialTitleKeywords]);
 
+    /*
     useEffect(() => {
         setDraft(value);
 
@@ -96,7 +97,8 @@ export default function FiltersForm({
             : [];
         setLocationKeywords(locs);
     }, [value]);
-
+    */
+   
     const update =
         <K extends keyof JobFilters>(k: K, v: JobFilters[K]) =>
             setDraft(prev => ({ ...prev, [k]: v }));
