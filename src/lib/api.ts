@@ -5,6 +5,7 @@
 
 import type { JobFilters } from "../components/FiltersForm";
 import type { JobListing } from "../components/JobCard";
+import { showError } from "../components/ErrorBanner";
 
 const API = "/api";  // vite proxy will forward this
 
@@ -24,23 +25,23 @@ function qs(f: JobFilters, offset = 0, limitOverride?: number) {
 }
 
 function toArray(data: unknown): JobListing[] {
-  if (Array.isArray(data)) return data; 
+    if (Array.isArray(data)) return data;
 
-   if (data && typeof data === "object" && "code" in data) {
-    throw new Error(
-      (data as any).message ??
-      "Server returned an error while parsing your query"
-    );
-  }
-                 // already an array
-  if (data && typeof data === "object") {
-    for (const k of ["jobs", "yc_jobs", "internships", "results", "data"]) {
-      const v = (data as any)[k];
-      if (Array.isArray(v)) return v;                  // unwrap first match
+    if (data && typeof data === "object" && "code" in data) {
+        throw new Error(
+            (data as any).message ??
+            "Server returned an error while parsing your query"
+        );
     }
-  }
-  console.warn("Unexpected jobs payload:", data);
-  return [];
+    // already an array
+    if (data && typeof data === "object") {
+        for (const k of ["jobs", "yc_jobs", "internships", "results", "data"]) {
+            const v = (data as any)[k];
+            if (Array.isArray(v)) return v;                  // unwrap first match
+        }
+    }
+    console.warn("Unexpected jobs payload:", data);
+    return [];
 }
 
 /* --------------------------------- */
@@ -62,14 +63,14 @@ export async function fetchJobs(
     const cfg = config[f.roleType];
     const limit = f.limit ?? cfg.default;
 
-    // FT uses single call; YC/Intern might need paging
-    /*
-    if (f.roleType === "FT") {
-        return doSingle(cfg, limit, f, signal);
+    try {
+        return await doSingle(cfg, limit, f, signal);
+    } catch (err: any) {
+        if (err.name !== "AbortError") {
+            showError(err.message ?? "API request failed");
+        }
+        throw err;
     }
-        */
-    return doSingle(cfg, limit, f, signal);
-    // return doPaged(cfg, limit, f, signal);
 }
 
 /* ---------- helpers ---------- */
@@ -86,7 +87,7 @@ async function doSingle(
         { signal }
     );
     if (!res.ok) throw new Error(`Server ${res.status}`);
-    const raw  = await res.json();
+    const raw = await res.json();
     return toArray(raw).slice(0, limit);
 }
 

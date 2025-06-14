@@ -29,6 +29,7 @@ import {
 import { motion } from "framer-motion";
 import UserProfile from "./UserProfile";
 import UserSettings from "./UserSettings";
+import { showError } from "./ErrorBanner"; 
 
 /* ------------------------------------------------------------------ */
 /* Types & context                                                    */
@@ -70,22 +71,29 @@ export default function AuthContainer({ children }: { children?: ReactNode }) {
       setToken(resp.access_token);
 
       // Basic profile (no extra APIs needed)
-      const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-        headers: { Authorization: `Bearer ${resp.access_token}` },
-      });
-      const data = await res.json();
-      setUser({
-        name: data.name ?? data.email.split("@")[0],
-        email: data.email,
-        picture: data.picture,
-      });
+      try {
+        const res = await fetch(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          { headers: { Authorization: `Bearer ${resp.access_token}` } }
+        );
+        if (!res.ok) throw new Error("Failed to fetch Google profile");
+        const data = await res.json();
+        setUser({
+          name: data.name ?? data.email.split("@")[0],
+          email: data.email,
+          picture: data.picture,
+        });
+      } catch (err: any) {
+        showError(err.message ?? "Could not fetch user info");
+        return;
+      }
 
       // simple client‑side “refresh” – silently logs in 1 min pre‑expiry
       if (resp.expires_in) {
         setTimeout(() => login(), (resp.expires_in - 60) * 1000);
       }
     },
-    onError: () => console.error("Google login failed"),
+    onError: () => showError("Google login failed"),
   });
 
   /* --- Sign‑out --------------------------------------------------- */

@@ -7,6 +7,7 @@ import { fetchJobs } from "@/lib/api";
 import type { JobListing } from "./components/JobCard";
 import type { JobFilters } from "./components/FiltersForm";
 import { ModeToggle } from "./components/ModeToggle";
+import { ErrorBanner, showError } from "./components/ErrorBanner";
 
 import sampleJobs from "@/assets/example_responses/fetch_jobs.json";
 
@@ -59,7 +60,6 @@ function App() {
     () => sampleJobs as unknown as JobListing[]   // lazy init, one‑time cast
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // abort controller stored across calls so we can cancel previous fetch
   const abortRef = useRef<AbortController | null>(null);
@@ -92,11 +92,9 @@ function App() {
     (async () => {
       try {
         setLoading(true);
-        setError(null);
-        // use our filtersWithLimit here
         setAllJobs(await fetchJobs(filtersWithLimit, ctrl.signal));
       } catch (e: any) {
-        if (e.name !== "AbortError") setError(e.message ?? "Network error");
+        if (e.name !== "AbortError") showError(e.message ?? "Network error");
       } finally {
         setLoading(false);
       }
@@ -168,6 +166,7 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={CLIENT_ID}>
+      <ErrorBanner />
       <main className="mx-auto max-w-6xl p-6 space-y-10">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Career Builder</h1>
@@ -189,7 +188,6 @@ function App() {
         </div>
 
         {loading && <p>Loading…</p>}
-        {error && <p className="text-red-600">{error}</p>}
 
         <JobGrid items={allJobs} />
       </main>

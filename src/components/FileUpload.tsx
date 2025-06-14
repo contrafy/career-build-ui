@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import { showError } from "./ErrorBanner";
 
 export type UploadKind = "resume" | "cover-letter" | "cv";
 
@@ -63,7 +64,6 @@ export default function FileUpload({ kind, onParsed }: Props) {
 
   const fileInput = useRef<HTMLInputElement>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
-  const [error, setError] = useState<string | null>(null);
   const [savedFile, setSavedFile] = useState<File | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -78,7 +78,6 @@ export default function FileUpload({ kind, onParsed }: Props) {
   // ─────────────────────────── upload logic ────────────────────────────
   async function sendFile(file: File) {
     setUploadState("uploading");
-    setError(null);
 
     try {
       const endpoint = endpointByKind[kind];
@@ -95,7 +94,7 @@ export default function FileUpload({ kind, onParsed }: Props) {
       setUploadState("success");
       setTimeout(() => setUploadState("saved"), 1200);
     } catch (e: any) {
-      setError(e.message ?? "Upload failed");
+      showError(e.message ?? "Upload failed");
       setUploadState("error");
     }
   }
@@ -103,7 +102,7 @@ export default function FileUpload({ kind, onParsed }: Props) {
   const handleChange = (files: FileList | null) => {
     if (!files?.[0]) return;
     if (files[0].type !== "application/pdf") {
-      setError("Please upload a PDF");
+      showError("Please upload a PDF");
       setUploadState("error");
       return;
     }
@@ -171,8 +170,6 @@ export default function FileUpload({ kind, onParsed }: Props) {
           </Button>
         </motion.div>
       </AnimatePresence>
-
-      {error && <p className="text-xs text-destructive">{error}</p>}
 
       {savedFile && (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
