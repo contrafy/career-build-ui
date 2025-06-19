@@ -114,7 +114,6 @@ function App() {
         {/* Resume upload */}
         <div className="flex flex-wrap gap-6 justify-center">
           <FileUpload kind="resume" onParsed={handleResumeDone} onFile={setResumeFile} />
-          <FileUpload kind="cover-letter" />
         </div>
 
         {loading && <p>Loading…</p>}

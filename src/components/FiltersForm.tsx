@@ -81,7 +81,8 @@ export default function FiltersForm({
     // refresh buckets **only** when résumé seeds change
     useEffect(() => {
         if (initialTitleKeywords) setTitleKeywords(initialTitleKeywords);
-    }, [initialTitleKeywords]);
+        if (initialLocationKeywords) setLocationKeywords(initialLocationKeywords);
+    }, [initialTitleKeywords, initialLocationKeywords]);
 
     /*
     useEffect(() => {
