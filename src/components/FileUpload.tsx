@@ -21,6 +21,7 @@ interface Props {
   kind: UploadKind;
   /** Called only for résumé uploads when backend returns filter JSON */
   onParsed?: (payload: any) => void;
+  onFile?: (file: File) => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ const variantByState: Record<UploadState, ButtonVariant> = {
 // COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function FileUpload({ kind, onParsed }: Props) {
+export default function FileUpload({ kind, onParsed, onFile }: Props) {
   const kindLabel = kind === "cover-letter" ? "cover letter" : "résumé";
 
   const fileInput = useRef<HTMLInputElement>(null);
@@ -90,6 +91,7 @@ export default function FileUpload({ kind, onParsed }: Props) {
         onParsed?.(data);
       }
 
+      onFile?.(file);
       setSavedFile(file);
       setUploadState("success");
       setTimeout(() => setUploadState("saved"), 1200);

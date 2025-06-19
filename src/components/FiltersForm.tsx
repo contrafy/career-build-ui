@@ -9,6 +9,9 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Label } from "@/components/ui/label";
 import KeywordBucket from "./KeywordBucket";
 
+import { fetchJobs } from "@/lib/api";
+import type { JobListing } from "./JobCard";
+
 // --- Types that mirror the eventual query params --------------------------- //
 export interface JobFilters {
     // ───────────── Shared ────────────────────────────────────────────────────
@@ -43,16 +46,45 @@ export interface JobFilters {
 }
 
 interface Props {
-    value: JobFilters;
-    onSubmit: (next: JobFilters) => void;
+    /** Fields the résumé doesn’t touch (remote / roleType / etc.) */
+    baseFilters: JobFilters;
+
+    /** Initial keyword lists from résumé parsing */
+    initialTitleKeywords?: string[];
+    initialLocationKeywords?: string[];
+
+    /** Update parent when search finishes */
+    onSearchComplete: (jobs: JobListing[] | null, error?: string) => void;
+
+    /** Let parent show/hide spinner */
+    setLoading: (b: boolean) => void;
+    resumeFile: File | null;
 }
 
-export default function FiltersForm({ value, onSubmit }: Props) {
-    const [draft, setDraft] = useState<JobFilters>(value);
-    const [titleKeywords, setTitleKeywords] = useState<string[]>([])
-    const [locationKeywords, setLocationKeywords] = useState<string[]>([])
+export default function FiltersForm({
+                                baseFilters,
+                                initialTitleKeywords,
+                                initialLocationKeywords,
+                                onSearchComplete,
+                                setLoading,
+                                resumeFile,
+                                }: Props) {
+    /** Local copy of the non‑keyword fields (remote, roleType, …) */
+    const [draft, setDraft] = useState<JobFilters>(baseFilters);
+    const [titleKeywords, setTitleKeywords] = useState<string[]>(initialTitleKeywords ?? [])
+    const [locationKeywords, setLocationKeywords] = useState<string[]>(initialLocationKeywords ?? [])
 
     
+    // Keep local non‑keyword fields in sync with parent
+    useEffect(() => { setDraft(baseFilters); }, [baseFilters]);
+
+    // refresh buckets **only** when résumé seeds change
+    useEffect(() => {
+        if (initialTitleKeywords) setTitleKeywords(initialTitleKeywords);
+        if (initialLocationKeywords) setLocationKeywords(initialLocationKeywords);
+    }, [initialTitleKeywords, initialLocationKeywords]);
+
+    /*
     useEffect(() => {
         setDraft(value);
 
@@ -66,10 +98,23 @@ export default function FiltersForm({ value, onSubmit }: Props) {
             : [];
         setLocationKeywords(locs);
     }, [value]);
-
+    */
+   
     const update =
         <K extends keyof JobFilters>(k: K, v: JobFilters[K]) =>
             setDraft(prev => ({ ...prev, [k]: v }));
+
+    // ——— helper: fire the API call ————————————————————————
+    const doSearch = async (filters: JobFilters) => {
+        console.log("doSearch", filters);
+        setLoading(true);
+        try {
+            const jobs = await fetchJobs(filters, resumeFile ?? undefined);
+            onSearchComplete(jobs);
+        } catch (err: any) {
+            onSearchComplete(null, err?.message ?? "Network error");
+        }
+    };
 
     return (
         <form
@@ -85,16 +130,16 @@ export default function FiltersForm({ value, onSubmit }: Props) {
                     location,
                 };
 
-                onSubmit(next);
+                doSearch(next);
             }}
         >
             <KeywordBucket
-                initial={[]}
+                initial={titleKeywords}
                 placeholder="Title keywords…"
                 onChange={setTitleKeywords}
             />
             <KeywordBucket
-                initial={[]}
+                initial={locationKeywords}
                 placeholder="Location keywords…"
                 onChange={setLocationKeywords}
             />

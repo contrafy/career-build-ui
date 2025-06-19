@@ -14,6 +14,11 @@ export default function KeywordBucket({ initial = [], placeholder, onChange }: P
     const [input, setInput] = useState("")
     const [keywords, setKeywords] = useState<string[]>(initial)
 
+    // keep internal state in sync when parent changes `initial`
+    useEffect(() => {
+        setKeywords(initial);
+    }, [initial]);
+
     // whenever our local keywords change, notify parent
     useEffect(() => {
         onChange?.(keywords)
@@ -58,7 +63,7 @@ export default function KeywordBucket({ initial = [], placeholder, onChange }: P
                             aria-label={`Remove ${kw}`}
                             className="text-xs leading-none"
                         >
-                            ×
+                            x
                         </button>
                     </Badge>
                 ))}
