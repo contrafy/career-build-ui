@@ -22,27 +22,6 @@ export interface JobFilters {
     remote: boolean | null;
     roleType: "FT" | "YC" | "INTERN" | "ADZUNA";
     limit: number | null;
-
-    // ───────────── FT & Internships ──────────────────────────────────────────
-    includeAI: boolean;
-    aiWork: string | null;                // On-site / Hybrid / Remote OK / Remote Solely
-
-    // ───────────── Internships only ─────────────────────────────────────────
-    agency: boolean;
-
-    // ───────────── Full-time only ────────────────────────────────────────────
-    org: string;
-    source: string;
-    aiEmployment: string;         // FULL_TIME / PART_TIME / …
-    aiHasSalary: boolean | null;
-    aiExperience: string | null;          // 0-2 / 2-5 / 5-10 / 10+
-    aiVisa: boolean | null;
-    includeLI: boolean;
-    liOrg: string;
-    liOrgExclude: string;
-    liIndustry: string;
-    liSpec: string;
-    liOrgDesc: string;
 }
 
 interface Props {

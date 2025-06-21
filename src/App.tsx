@@ -31,27 +31,6 @@ const DEFAULT_FILTERS: JobFilters = {
   remote: null,
   roleType: "ADZUNA",
   limit: null,
-
-  // ───── FT & Intern
-  includeAI: false,
-  aiWork: "",
-
-  // ───── Internships
-  agency: false,
-
-  // ───── Full-time
-  org: "",
-  source: "",
-  aiEmployment: "",
-  aiHasSalary: null,
-  aiExperience: "",
-  aiVisa: null,
-  includeLI: false,
-  liOrg: "",
-  liOrgExclude: "",
-  liIndustry: "",
-  liSpec: "",
-  liOrgDesc: "",
 };
 
 function App() {
@@ -68,10 +47,9 @@ function App() {
   /** Called by FiltersForm when a search completes (or fails) */
   const handleSearchComplete = (jobs: JobListing[] | null, err?: string) => {
     if (err) {
-      setError(err);
+      showError(err);
     } else if (jobs) {
       setAllJobs(jobs);
-      setError(null);
     }
     setLoading(false);
   };
